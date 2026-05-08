@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.konetic.or.kr)",
+      "WebSearch",
+      "WebFetch(domain:www.ecothon.kr)",
+      "WebFetch(domain:www.kairnews.com)",
+      "WebFetch(domain:konetic.or.kr)",
+      "WebFetch(domain:mcee.go.kr)",
+      "WebFetch(domain:www.korea.kr)",
+      "WebFetch(domain:www.aitimes.kr)",
+      "WebFetch(domain:www.cio.com)",
+      "WebFetch(domain:hannahritchie.substack.com)",
+      "WebFetch(domain:www.iea.org)",
+      "WebFetch(domain:www.whitecase.com)",
+      "WebFetch(domain:www.joongboo.com)",
+      "WebFetch(domain:www.mdpi.com)",
+      "WebFetch(domain:www.wipro.com)"
+    ]
+  }
+}
