@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Duck Curve</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  /* ── The Pudding / NYT Graphics 스타일 ── */
+  :root {
+    --cream:  #F5F3EE;
+    --ink:    #0D0D0D;
+    --muted:  #666;
+    --rule:   #CCC;
+    --green:  #1B4332;
+    --red:    #B91C1C;
+    --amber:  #78350F;
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    padding: 56px 40px;
+    min-height: 100vh;
+  }
+
+  .wrap { width: 900px; }
+
+  .eyebrow {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--green);
+    border-left: 3px solid var(--green);
+    padding-left: 10px;
+    margin-bottom: 20px;
+  }
+
+  /* 헤드라인 */
+  .headline {
+    border-top: 2px solid var(--ink);
+    padding-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 40px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .hl-title { font-size: 2rem; font-weight: 700; line-height: 1.25; letter-spacing: -.02em; margin-bottom: 12px; }
+  .hl-deck {
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--muted);
+  }
+  .hl-legend { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+  .leg-item { display: flex; align-items: center; gap: 10px; font-family: system-ui, sans-serif; font-size: 12px; color: var(--muted); }
+  .leg-line { height: 3px; width: 32px; border-radius: 2px; flex-shrink: 0; }
+  .leg-dashed { height: 0; width: 32px; border-top: 2.5px dashed var(--red); flex-shrink: 0; }
+
+  /* 차트 */
+  .chart-container { position: relative; }
+  .chart-wrap { height: 360px; position: relative; }
+
+  /* 주석 레이어 — 차트 위에 절대 배치 */
+  .annotation-curtailment {
+    position: absolute;
+    top: 24px;
+    left: 195px;
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(245,243,238,.9);
+    padding: 3px 6px;
+    border: 1px solid var(--green);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .annotation-peak {
+    position: absolute;
+    top: 24px;
+    right: 130px;
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--red);
+    background: rgba(245,243,238,.9);
+    padding: 3px 6px;
+    border: 1px solid var(--red);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  /* 하단 3칸 콜아웃 */
+  .callouts {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    border-top: 2px solid var(--ink);
+    margin-top: 8px;
+  }
+  .callout {
+    padding: 20px 20px 20px 0;
+    border-right: 1px solid var(--rule);
+    padding-right: 20px;
+  }
+  .callout:first-child { padding-left: 0; }
+  .callout:last-child { border-right: none; }
+  .callout-kicker {
+    font-family: system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-bottom: 8px;
+  }
+  .callout-kicker.green { color: var(--green); }
+  .callout-kicker.red   { color: var(--red); }
+  .callout-kicker.amber { color: var(--amber); }
+  .callout-num {
+    font-family: system-ui, sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 6px;
+    letter-spacing: -.02em;
+  }
+  .callout-num.green { color: var(--green); }
+  .callout-num.red   { color: var(--red); }
+  .callout-num.amber { color: var(--amber); }
+  .callout-body {
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+  .callout-body strong { color: var(--ink); }
+
+  .source-line {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--rule);
+    padding-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 24px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .wrap { animation: fadein 400ms cubic-bezier(.2,0,0,1); }
+    @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">사회문제 해결 1-1 / 1-2 &nbsp;/&nbsp; 재생에너지 수급 불일치</div>
+
+  <div class="headline">
+    <div>
+      <div class="hl-title">태양광이 남아서 버려지는 시간,<br>저녁엔 화석연료가 긴급 투입된다</div>
+      <div class="hl-deck">
+        오전 10시~오후 2시, 태양광이 최대로 생산되지만 가정 수요는 낮다.
+        전력망이 흡수하지 못해 발전소를 강제로 끄는 출력제한이 발생한다.
+        청정 시간은 이 잉여 전력을 가정 수요로 흡수하고, 저녁 피크의 LNG 긴급 가동을 줄인다.
+      </div>
+    </div>
+    <div class="hl-legend">
+      <div class="leg-item"><div class="leg-line" style="background:#B45309"></div>재생에너지 발전량</div>
+      <div class="leg-item"><div class="leg-line" style="background:#1B4332"></div>가정 전력 수요</div>
+      <div class="leg-item"><div class="leg-dashed"></div>순 부하 (LNG 필요량)</div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart-wrap">
+      <canvas id="chart"></canvas>
+    </div>
+    <div class="annotation-curtailment">☀ 출력제한 위기 구간</div>
+    <div class="annotation-peak">⚡ 저녁 피크 위기 구간</div>
+  </div>
+
+  <div class="callouts">
+    <div class="callout">
+      <div class="callout-kicker green">청정 시간 — 재생E 잉여</div>
+      <div class="callout-num green">오전 10시<br>~오후 2시</div>
+      <div class="callout-body">
+        태양광 최대 <strong>17.8 GW</strong> 발전.<br>
+        수요 대비 공급 초과 → 출력제한 위기.<br>
+        <strong>세탁기·EV 충전을 이 시간으로 이동</strong>하면 잉여 전기가 소비된다.
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-kicker amber">출력제한 손실 현황</div>
+      <div class="callout-num amber">700GWh+</div>
+      <div class="callout-body">
+        2023년 실제 출력제한량. 2040년 예상 <strong>23.4 TWh</strong> —
+        서울시 연간 전력 소비량의 약 1/3이 버려질 수 있다.
+        가정 5% 시간 이동 시 <strong>연 -2 TWh</strong> 절감 추산.
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-kicker red">저녁 피크 — LNG 긴급 투입</div>
+      <div class="callout-num red">540 gCO₂<br>/kWh</div>
+      <div class="callout-body">
+        오후 6~9시 탄소강도. 청정 시간 대비 <strong>2.7배</strong> 높다.
+        LNG 화력 신규 1기 건설 회피 시 약 <strong>5천억원</strong> 절감 효과.
+      </div>
+    </div>
+  </div>
+
+  <div class="source-line">
+    <span>출처: 전력거래소 EPSIS / 제10차 전력수급기본계획 / 한국 2025년 봄·가을 평균 패턴 모형화</span>
+    <span>2026 기후부 AX 아이디어 경진대회 — 청정 시간</span>
+  </div>
+</div>
+
+<script>
+const hours = Array.from({length:24}, (_,i)=> i+'시');
+const renewable = [2.1,1.9,1.8,1.7,1.8,2.2,3.1,5.2,8.4,12.1,15.3,17.2,17.8,17.1,15.0,11.2,7.3,4.1,2.8,2.3,2.2,2.1,2.1,2.1];
+const demand    = [38,35,33,32,31,32,35,40,44,47,46,44,43,43,44,46,49,54,62,66,64,58,50,43];
+const netLoad   = demand.map((d,i)=>+(Math.max(d-renewable[i],0).toFixed(1)));
+
+const zonePlugin = {
+  id:'zones',
+  beforeDatasetsDraw(chart){
+    const {ctx,chartArea:{top,bottom},scales:{x}}=chart;
+    ctx.save();
+    // 청정 구간
+    const cx0=x.getPixelForValue(9.5), cx1=x.getPixelForValue(14.5);
+    ctx.fillStyle='rgba(27,67,50,0.07)';
+    ctx.fillRect(cx0,top,cx1-cx0,bottom-top);
+    ctx.strokeStyle='#1B4332'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(cx0,top); ctx.lineTo(cx0,bottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx1,top); ctx.lineTo(cx1,bottom); ctx.stroke();
+    ctx.setLineDash([]);
+    // 피크 구간
+    const px0=x.getPixelForValue(17.5), px1=x.getPixelForValue(21.5);
+    ctx.fillStyle='rgba(185,28,28,0.06)';
+    ctx.fillRect(px0,top,px1-px0,bottom-top);
+    ctx.strokeStyle='#B91C1C'; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(px0,top); ctx.lineTo(px0,bottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px1,top); ctx.lineTo(px1,bottom); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+};
+
+const valPlugin = {
+  id:'vals',
+  afterDatasetsDraw(chart){
+    const {ctx,scales:{x,y}}=chart;
+    ctx.save();
+    ctx.font='700 11px Menlo,Consolas,monospace';
+    // 재생E 최고점 (12시, 17.8)
+    const m0=chart.getDatasetMeta(0).data[12];
+    ctx.fillStyle='#B45309'; ctx.textAlign='center';
+    ctx.fillText('17.8 GW',m0.x,m0.y-10);
+    // 수요 최고점 (19시, 66)
+    const m1=chart.getDatasetMeta(1).data[19];
+    ctx.fillStyle='#1B4332';
+    ctx.fillText('66 GW',m1.x,m1.y-10);
+    ctx.restore();
+  }
+};
+
+const ctx=document.getElementById('chart').getContext('2d');
+new Chart(ctx,{
+  type:'line',
+  plugins:[zonePlugin,valPlugin],
+  data:{
+    labels:hours,
+    datasets:[
+      { label:'재생에너지', data:renewable, borderColor:'#B45309', backgroundColor:'rgba(180,83,9,.1)', borderWidth:2.5, fill:true, tension:.4, pointRadius:0, pointHoverRadius:5 },
+      { label:'수요',       data:demand,    borderColor:'#1B4332', backgroundColor:'transparent',      borderWidth:2.5, fill:false,tension:.4, pointRadius:0, pointHoverRadius:5 },
+      { label:'순부하',     data:netLoad,   borderColor:'#B91C1C', borderDash:[7,4],                    borderWidth:2,   fill:false,tension:.4, pointRadius:0, pointHoverRadius:5 },
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>` ${c.dataset.label}: ${c.raw} GW` } } },
+    scales:{
+      x:{ grid:{color:'#E0DDD6'}, border:{color:'#CCC'}, ticks:{ font:{size:11,family:'Menlo,Consolas,monospace'}, color:'#777', maxTicksLimit:12 } },
+      y:{ grid:{color:'#E0DDD6'}, border:{color:'#0D0D0D',width:2}, ticks:{ callback:(v)=>v+' GW', font:{size:11,family:'Menlo,Consolas,monospace'}, color:'#777' }, min:0, max:80 }
+    },
+    animation:{duration:0}
+  }
+});
+</script>
+</body>
+</html>

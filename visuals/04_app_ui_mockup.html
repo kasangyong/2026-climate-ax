@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>청정 시간 — 앱 UI 목업</title>
+<style>
+  /* ── Dribbble 핀테크 / 그린테크 트렌드 ── */
+  /* 참조: Monzo, Tomorrow, Octopus Energy 앱 스타일 */
+  :root {
+    --green-900: #064E3B;
+    --green-800: #065F46;
+    --green-700: #047857;
+    --green-500: #10B981;
+    --green-200: #A7F3D0;
+    --green-50:  #ECFDF5;
+    --red-600:   #DC2626;
+    --red-50:    #FEF2F2;
+    --amber-700: #B45309;
+    --amber-50:  #FFFBEB;
+    --gray-900:  #111827;
+    --gray-700:  #374151;
+    --gray-500:  #6B7280;
+    --gray-300:  #D1D5DB;
+    --gray-100:  #F3F4F6;
+    --white:     #FFFFFF;
+    --bg:        #F9FAFB;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: #E5E7EB;
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    padding: 48px 32px;
+    min-height: 100vh;
+  }
+
+  /* 페이지 헤더 */
+  .pg-header {
+    max-width: 1260px;
+    margin: 0 auto 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    border-bottom: 2px solid #9CA3AF;
+    padding-bottom: 16px;
+  }
+  .pg-kicker { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #6B7280; margin-bottom: 6px; }
+  .pg-title { font-size: 22px; font-weight: 800; color: #111827; }
+  .pg-sub { font-size: 13px; color: #6B7280; margin-top: 3px; }
+  .pg-flow { font-size: 12px; color: #9CA3AF; font-style: italic; }
+
+  /* 화면 컨테이너 */
+  .screens { display: flex; gap: 24px; justify-content: center; max-width: 1260px; margin: 0 auto; flex-wrap: wrap; }
+
+  .screen-col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .screen-badge {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+    color: #6B7280; background: white; padding: 3px 10px; border-radius: 2px;
+  }
+  .screen-caption { font-size: 11px; color: #6B7280; text-align: center; line-height: 1.5; max-width: 200px; }
+
+  /* 폰 프레임 */
+  .phone {
+    width: 218px;
+    background: #18181B;
+    border-radius: 34px;
+    padding: 8px;
+    box-shadow: 0 0 0 1px #27272A, 0 20px 48px rgba(0,0,0,.28);
+  }
+  .screen {
+    background: var(--white);
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── 공통 컴포넌트 ── */
+  .sb { display:flex; justify-content:space-between; padding:7px 16px 3px; font-size:9px; font-weight:700; color:#111827; background:white; }
+  .nav-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 14px 10px; background: white;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .nav-title { font-size: 15px; font-weight: 800; color: var(--gray-900); }
+  .nav-back { font-size: 13px; font-weight: 600; color: var(--green-700); }
+  .nav-chip { font-size: 10px; font-weight: 600; color: var(--gray-500); background: var(--gray-100); padding: 3px 8px; border-radius: 12px; }
+
+  .tab-row {
+    display: flex; border-top: 1px solid var(--gray-100);
+    padding: 7px 0 10px; background: white;
+  }
+  .tab { flex:1; text-align:center; font-size:8px; font-weight:500; color:var(--gray-500); }
+  .tab.on { color:var(--green-700); font-weight:700; }
+  .tab-ic { display:block; font-size:16px; margin-bottom:1px; }
+
+  .sec { padding: 10px 14px 0; }
+  .sec-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--gray-500); margin-bottom: 6px; }
+
+  /* ── 화면 1: 홈 ── */
+
+  /* 그린 헤더 카드 */
+  .home-hero {
+    background: var(--green-900);
+    padding: 14px 14px 16px;
+    color: white;
+  }
+  .hh-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+  .hh-app { font-size:13px; font-weight:800; color:white; letter-spacing:-.01em; }
+  .hh-loc { font-size:9px; font-weight:600; color:var(--green-200); background:rgba(255,255,255,.12); padding:2px 7px; border-radius:10px; }
+  .hh-status { font-size:9px; font-weight:700; color:var(--green-200); letter-spacing:.05em; text-transform:uppercase; margin-bottom:4px; }
+  .hh-ci { font-size:42px; font-weight:800; color:white; line-height:1; letter-spacing:-.03em; margin-bottom:2px; }
+  .hh-unit { font-size:10px; color:rgba(255,255,255,.6); margin-bottom:10px; }
+  .ci-progress { height:4px; background:rgba(255,255,255,.2); border-radius:2px; margin-bottom:3px; }
+  .ci-prog-fill { height:4px; border-radius:2px; }
+  .ci-scale-row { display:flex; justify-content:space-between; font-size:8px; color:rgba(255,255,255,.5); }
+
+  /* 타임라인 */
+  .tl-wrap { padding:10px 12px 0; }
+  .tl-sec-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--gray-500); margin-bottom:6px; }
+  .tl-slots { display:flex; gap:3px; }
+  .tl-s { flex:1; text-align:center; padding:4px 2px 3px; border-radius:4px; }
+  .tl-s.active { border:1.5px solid var(--green-700); background:var(--green-50); }
+  .tl-h { font-size:8px; color:var(--gray-500); margin-bottom:2px; }
+  .tl-s.active .tl-h { color:var(--green-700); font-weight:700; }
+  .tl-bar-bg { height:22px; background:var(--gray-100); border-radius:2px; position:relative; overflow:hidden; margin:0 3px 2px; }
+  .tl-bar-fill { position:absolute; bottom:0; left:0; width:100%; border-radius:2px; }
+  .tl-v { font-size:7px; font-family:'Menlo',monospace; color:var(--gray-500); }
+  .tl-s.active .tl-v { color:var(--green-700); font-weight:700; }
+
+  /* 행동 카드 */
+  .action-list { padding:8px 12px 0; display:flex; flex-direction:column; gap:5px; }
+  .ac {
+    display:flex; align-items:center; gap:8px;
+    padding:9px 10px; border-radius:8px;
+    border:1px solid var(--gray-100); background:var(--bg);
+  }
+  .ac.hi { border-color:var(--green-200); background:var(--green-50); }
+  .ac-ic { font-size:18px; flex-shrink:0; }
+  .ac-body { flex:1; }
+  .ac-title { font-size:11px; font-weight:700; color:var(--gray-900); margin-bottom:1px; }
+  .ac-sub { font-size:9px; color:var(--gray-500); }
+  .ac-btn { font-size:9px; font-weight:700; padding:4px 9px; border-radius:5px; white-space:nowrap; }
+  .ac-btn.green { background:var(--green-700); color:white; }
+  .ac-btn.gray  { background:var(--gray-100); color:var(--gray-500); }
+
+  /* ── 화면 2: 알림 ── */
+  .notif-hero {
+    margin:10px 12px 0;
+    background:var(--green-900);
+    border-radius:10px; padding:14px;
+    color:white;
+  }
+  .nh-kicker { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--green-200); margin-bottom:4px; }
+  .nh-title { font-size:14px; font-weight:800; line-height:1.3; margin-bottom:10px; }
+  .nh-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .nh-stat { background:rgba(255,255,255,.1); border-radius:6px; padding:8px; }
+  .nh-stat-l { font-size:8px; color:rgba(255,255,255,.6); margin-bottom:2px; }
+  .nh-stat-v { font-size:15px; font-weight:800; color:white; font-family:'Menlo',monospace; }
+  .nh-stat-v.em { color:var(--green-200); }
+
+  .btn-duo { display:flex; gap:6px; padding:8px 12px 0; }
+  .btn-p { flex:1; background:var(--green-700); color:white; border-radius:7px; padding:9px 0; font-size:11px; font-weight:700; text-align:center; }
+  .btn-s { flex:1; background:white; color:var(--gray-700); border:1px solid var(--gray-300); border-radius:7px; padding:9px 0; font-size:11px; font-weight:700; text-align:center; }
+
+  .dr-card {
+    margin:8px 12px 0;
+    border:1px solid #FCD34D; background:var(--amber-50);
+    border-radius:8px; padding:10px 12px;
+  }
+  .dr-kicker { font-size:9px; font-weight:700; color:var(--amber-700); text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px; }
+  .dr-title { font-size:11px; font-weight:700; color:#78350F; margin-bottom:2px; }
+  .dr-desc { font-size:9px; color:#92400E; line-height:1.4; margin-bottom:4px; }
+  .dr-amt { font-size:16px; font-weight:800; color:var(--amber-700); font-family:'Menlo',monospace; }
+
+  .community-card {
+    margin:8px 12px 0;
+    background:var(--bg); border:1px solid var(--gray-100);
+    border-radius:8px; padding:10px 12px;
+  }
+  .cc-title { font-size:10px; font-weight:700; color:var(--gray-700); margin-bottom:5px; }
+  .cc-bar-bg { height:5px; background:var(--gray-100); border-radius:3px; margin-bottom:3px; }
+  .cc-bar-fill { height:5px; background:var(--green-500); border-radius:3px; }
+  .cc-sub { font-size:9px; color:var(--gray-500); }
+
+  /* ── 화면 3: 가전 예약 ── */
+  .appl-info {
+    margin:10px 12px 0; padding:10px 12px;
+    background:var(--bg); border:1px solid var(--gray-100); border-radius:8px;
+  }
+  .ai-name { font-size:12px; font-weight:800; color:var(--gray-900); margin-bottom:6px; }
+  .ai-row { display:flex; justify-content:space-between; }
+  .ai-stat { }
+  .ai-sl { font-size:8px; color:var(--gray-500); }
+  .ai-sv { font-size:12px; font-weight:700; color:var(--gray-900); font-family:'Menlo',monospace; }
+
+  .time-pick { margin:8px 12px 0; border:1px solid var(--gray-100); border-radius:8px; overflow:hidden; }
+  .tp-head { background:var(--gray-100); padding:7px 10px; font-size:9px; font-weight:700; color:var(--gray-500); text-transform:uppercase; letter-spacing:.06em; }
+  .tp-slots { display:flex; }
+  .tp-sl {
+    flex:1; padding:7px 4px; text-align:center;
+    border-right:1px solid var(--gray-100); cursor:pointer;
+  }
+  .tp-sl:last-child { border-right:none; }
+  .tp-sl.on { background:var(--green-900); }
+  .tp-sl.on .tp-h { color:white; }
+  .tp-sl.on .tp-ci { color:var(--green-200); }
+  .tp-sl.on .tp-bar-i { background:var(--green-200); }
+  .tp-h { font-size:10px; font-weight:700; color:var(--gray-700); }
+  .tp-bar-bg { height:28px; background:var(--gray-100); border-radius:2px; margin:3px 5px; overflow:hidden; position:relative; }
+  .tp-bar-i { position:absolute; bottom:0; left:0; width:100%; border-radius:2px; }
+  .tp-ci { font-size:7px; font-family:'Menlo',monospace; color:var(--gray-500); margin-top:2px; }
+
+  .vs-compare {
+    margin:8px 12px 0;
+    display:grid; grid-template-columns:1fr 28px 1fr; gap:4px; align-items:center;
+  }
+  .vc-box { border-radius:7px; padding:9px; border:1px solid; text-align:center; }
+  .vc-box.bad  { border-color:#FCA5A5; background:var(--red-50); }
+  .vc-box.good { border-color:var(--green-200); background:var(--green-50); }
+  .vc-time { font-size:9px; font-weight:700; margin-bottom:2px; }
+  .vc-time.r { color:var(--red-600); }
+  .vc-time.g { color:var(--green-700); }
+  .vc-num { font-size:16px; font-weight:800; font-family:'Menlo',monospace; }
+  .vc-num.r { color:var(--red-600); }
+  .vc-num.g { color:var(--green-700); }
+  .vc-unit { font-size:8px; color:var(--gray-500); }
+  .vs-sep { text-align:center; font-size:10px; font-weight:700; color:var(--gray-500); }
+  .saving-chip { margin:6px 12px 0; background:var(--green-50); border:1px solid var(--green-200); border-radius:6px; padding:6px 10px; text-align:center; font-size:10px; font-weight:600; color:var(--green-700); }
+
+  /* ── 화면 4: 피드백 ── */
+  .fb-hero {
+    background:var(--green-900); padding:14px 14px 16px; color:white;
+  }
+  .fbh-sub { font-size:9px; color:rgba(255,255,255,.6); margin-bottom:3px; }
+  .fbh-title { font-size:14px; font-weight:800; line-height:1.3; margin-bottom:10px; }
+  .fbh-row { display:flex; justify-content:space-between; }
+  .fbh-stat { text-align:center; }
+  .fbh-v { font-size:17px; font-weight:800; font-family:'Menlo',monospace; }
+  .fbh-l { font-size:8px; opacity:.65; margin-top:1px; }
+
+  .bar-cmp { margin:10px 12px 0; background:var(--bg); border:1px solid var(--gray-100); border-radius:8px; padding:10px 12px; }
+  .bc-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--gray-500); margin-bottom:8px; }
+  .bc-row { display:flex; gap:16px; align-items:flex-end; height:70px; }
+  .bc-c { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+  .bc-b { width:100%; border-radius:3px 3px 0 0; }
+  .bc-cl { font-size:9px; color:var(--gray-500); margin-top:3px; text-align:center; }
+  .bc-cv { font-size:12px; font-weight:700; font-family:'Menlo',monospace; text-align:center; margin-top:1px; }
+  .bc-cv.r { color:var(--red-600); }
+  .bc-cv.g { color:var(--green-700); }
+  .bc-save { margin-top:8px; padding-top:8px; border-top:1px solid var(--gray-100); font-size:10px; font-weight:600; color:var(--green-700); text-align:center; }
+
+  .cum-list { padding:8px 12px 0; display:flex; flex-direction:column; gap:5px; }
+  .cum-item { display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:8px; border:1px solid var(--gray-100); background:var(--bg); }
+  .cum-ic { font-size:18px; flex-shrink:0; }
+  .cum-body { flex:1; }
+  .cum-v { font-size:12px; font-weight:800; color:var(--gray-900); }
+  .cum-l { font-size:9px; color:var(--gray-500); margin-top:1px; }
+  .cum-tag { font-size:8px; font-weight:700; background:var(--green-50); color:var(--green-700); padding:2px 6px; border-radius:3px; white-space:nowrap; }
+
+  .rank-box { margin:8px 12px 0; padding:10px 12px; background:#EEF2FF; border:1px solid #C7D2FE; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
+  .rk-l { }
+  .rk-label { font-size:9px; font-weight:700; color:#6366F1; }
+  .rk-val { font-size:18px; font-weight:800; color:#3730A3; font-family:'Menlo',monospace; }
+  .rk-sub { font-size:9px; color:var(--gray-500); }
+  .rk-r { font-size:9px; color:var(--gray-500); text-align:right; line-height:1.6; }
+
+  /* ── 화면 5: 보상 ── */
+  .reward-hero { background:var(--green-900); padding:14px 14px 16px; color:white; }
+  .rh-sub { font-size:9px; color:rgba(255,255,255,.6); margin-bottom:3px; text-transform:uppercase; letter-spacing:.06em; }
+  .rh-total { font-size:34px; font-weight:800; line-height:1; font-family:'Menlo',monospace; margin-bottom:3px; }
+  .rh-desc { font-size:9px; color:rgba(255,255,255,.6); margin-bottom:10px; }
+  .rh-prog-row { display:flex; align-items:center; gap:8px; }
+  .rh-prog-bg { flex:1; height:4px; background:rgba(255,255,255,.2); border-radius:2px; }
+  .rh-prog-fill { height:4px; border-radius:2px; background:var(--green-200); }
+  .rh-pct { font-size:9px; font-weight:700; color:var(--green-200); font-family:'Menlo',monospace; }
+
+  .reward-summary { display:grid; grid-template-columns:1fr 1fr; gap:6px; padding:10px 12px 0; }
+  .rs-box { background:var(--bg); border:1px solid var(--gray-100); border-radius:8px; padding:9px 10px; }
+  .rs-l { font-size:9px; color:var(--gray-500); margin-bottom:2px; }
+  .rs-v { font-size:14px; font-weight:800; color:var(--gray-900); font-family:'Menlo',monospace; }
+  .rs-sub { font-size:8px; color:var(--gray-500); margin-top:1px; }
+
+  .reward-items { padding:8px 12px 0; display:flex; flex-direction:column; gap:4px; }
+  .ri { display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:8px; border:1px solid var(--gray-100); background:var(--bg); }
+  .ri-ic { font-size:16px; flex-shrink:0; }
+  .ri-body { flex:1; }
+  .ri-name { font-size:11px; font-weight:700; color:var(--gray-900); margin-bottom:1px; }
+  .ri-desc { font-size:9px; color:var(--gray-500); }
+  .ri-status { font-size:8px; font-weight:700; padding:2px 5px; border-radius:3px; margin-top:2px; display:inline-block; }
+  .ri-status.auto { background:var(--green-50); color:var(--green-700); }
+  .ri-status.pend { background:var(--amber-50); color:var(--amber-700); }
+  .ri-amt { font-size:12px; font-weight:800; font-family:'Menlo',monospace; color:var(--green-700); white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<div class="pg-header">
+  <div>
+    <div class="pg-kicker">구체성 — 앱 UI 목업 5화면</div>
+    <div class="pg-title">청정 시간 (Green Hour)</div>
+    <div class="pg-sub">사용자 경험 시뮬레이션 — 실제 데이터 기반</div>
+  </div>
+  <div class="pg-flow">홈 → 알림 수신 → 가전 예약 → 탄소 피드백 → 보상 현황</div>
+</div>
+
+<div class="screens">
+
+  <!-- ① 홈 -->
+  <div class="screen-col">
+    <div class="screen-badge">① 홈</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sb"><span>9:41</span><span>5G ▌▌▌</span></div>
+
+        <div class="home-hero">
+          <div class="hh-top">
+            <div class="hh-app">Green Hour</div>
+            <div class="hh-loc">마포구</div>
+          </div>
+          <div class="hh-status">지금은 청정 시간</div>
+          <div class="hh-ci">215</div>
+          <div class="hh-unit">gCO₂/kWh — 오늘 최저 수준 (연평균의 49%)</div>
+          <div class="ci-progress"><div class="ci-prog-fill" style="width:35%;background:#A7F3D0"></div></div>
+          <div class="ci-scale-row"><span>청정 200</span><span>연평균 440</span><span>피크 550</span></div>
+        </div>
+
+        <!-- 타임라인 -->
+        <div class="tl-wrap">
+          <div class="tl-sec-lbl">오늘 탄소강도 예측</div>
+          <div class="tl-slots">
+            <div class="tl-s"><div class="tl-h">6시</div><div class="tl-bar-bg"><div class="tl-bar-fill" style="height:65%;background:#78350F"></div></div><div class="tl-v" style="color:#78350F">430</div></div>
+            <div class="tl-s"><div class="tl-h">9시</div><div class="tl-bar-bg"><div class="tl-bar-fill" style="height:50%;background:#78350F"></div></div><div class="tl-v" style="color:#78350F">340</div></div>
+            <div class="tl-s"><div class="tl-h">11시</div><div class="tl-bar-bg"><div class="tl-bar-fill" style="height:20%;background:#047857"></div></div><div class="tl-v" style="color:#047857">230</div></div>
+            <div class="tl-s active"><div class="tl-h">지금</div><div class="tl-bar-bg"><div class="tl-bar-fill" style="height:15%;background:#A7F3D0"></div></div><div class="tl-v">215</div></div>
+            <div class="tl-s"><div class="tl-h">15시</div><div class="tl-bar-bg"><div class="tl-bar-fill" style="height:38%;background:#78350F"></div></div><div class="tl-v" style="color:#78350F">260</div></div>
+            <div class="tl-s"><div class="tl-h">18시</div><div class="tl-bar-bg"><div class="tl-bar-fill" style="height:74%;background:#B91C1C"></div></div><div class="tl-v" style="color:#B91C1C">480</div></div>
+            <div class="tl-s"><div class="tl-h">21시</div><div class="tl-bar-bg"><div class="tl-bar-fill" style="height:90%;background:#7F1D1D"></div></div><div class="tl-v" style="color:#7F1D1D">545</div></div>
+          </div>
+        </div>
+
+        <div class="sec" style="margin-top:8px"><div class="sec-lbl">지금 하면 좋은 것</div></div>
+        <div class="action-list">
+          <div class="ac hi">
+            <div class="ac-ic">🧺</div>
+            <div class="ac-body"><div class="ac-title">세탁기 지금 시작</div><div class="ac-sub">탄소 −63% &nbsp;·&nbsp; 절약 180원</div></div>
+            <div class="ac-btn green">시작</div>
+          </div>
+          <div class="ac hi">
+            <div class="ac-ic">🔌</div>
+            <div class="ac-body"><div class="ac-title">EV 충전 시작</div><div class="ac-sub">탄소 −63% &nbsp;·&nbsp; 절약 3,200원</div></div>
+            <div class="ac-btn green">시작</div>
+          </div>
+          <div class="ac">
+            <div class="ac-ic">🍽</div>
+            <div class="ac-body"><div class="ac-title">식기세척기</div><div class="ac-sub">오후 1:30 자동 예약됨</div></div>
+            <div class="ac-btn gray">예약됨</div>
+          </div>
+        </div>
+
+        <div class="tab-row" style="margin-top:10px">
+          <div class="tab on"><span class="tab-ic">⌂</span>홈</div>
+          <div class="tab"><span class="tab-ic">⏱</span>예약</div>
+          <div class="tab"><span class="tab-ic">◎</span>리포트</div>
+          <div class="tab"><span class="tab-ic">◈</span>보상</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-caption">홈 화면<br>탄소강도 히어로 + 타임라인 + 행동 유도</div>
+  </div>
+
+  <!-- ② 알림 -->
+  <div class="screen-col">
+    <div class="screen-badge">② 알림 수신</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sb"><span>10:02</span><span>5G ▌▌▌</span></div>
+        <div class="nav-bar">
+          <div class="nav-back">← 알림함</div>
+          <div class="nav-title" style="font-size:13px">청정 시간 알림</div>
+          <div style="width:40px"></div>
+        </div>
+
+        <div class="notif-hero">
+          <div class="nh-kicker">오전 청정 시간 시작</div>
+          <div class="nh-title">재생에너지가 넘칩니다.<br>지금이 가장 깨끗한 전기입니다.</div>
+          <div class="nh-grid">
+            <div class="nh-stat"><div class="nh-stat-l">현재 탄소강도</div><div class="nh-stat-v em">227 g</div></div>
+            <div class="nh-stat"><div class="nh-stat-l">저녁 피크 대비</div><div class="nh-stat-v">−58%</div></div>
+            <div class="nh-stat"><div class="nh-stat-l">지속 예상 시간</div><div class="nh-stat-v">3h 20m</div></div>
+            <div class="nh-stat"><div class="nh-stat-l">세탁기 1회 절감</div><div class="nh-stat-v em">−34g CO₂</div></div>
+          </div>
+        </div>
+
+        <div class="btn-duo">
+          <div class="btn-p">가전 예약 설정</div>
+          <div class="btn-s">나중에</div>
+        </div>
+
+        <div class="dr-card">
+          <div class="dr-kicker">국민DR 발령 예정</div>
+          <div class="dr-title">오후 2~5시 수요 감축 요청</div>
+          <div class="dr-desc">전력 수급 예비율 저하 예상. 참여 시 자동 보상.</div>
+          <div class="dr-amt">+4,800원 예상 적립</div>
+        </div>
+
+        <div style="padding:6px 12px 0">
+          <div class="btn-p" style="background:#B45309;border-radius:7px;padding:9px;font-size:11px;font-weight:700;text-align:center;color:white">DR 자동 참여 설정</div>
+        </div>
+
+        <div class="community-card">
+          <div class="cc-title">지금 마포구 <strong style="color:#047857">1,240가구</strong>가 청정 시간 이용 중</div>
+          <div class="cc-bar-bg"><div class="cc-bar-fill" style="width:62%"></div></div>
+          <div class="cc-sub">구 전체 목표 대비 62%</div>
+        </div>
+
+        <div class="tab-row" style="margin-top:14px">
+          <div class="tab on"><span class="tab-ic">⌂</span>홈</div>
+          <div class="tab"><span class="tab-ic">⏱</span>예약</div>
+          <div class="tab"><span class="tab-ic">◎</span>리포트</div>
+          <div class="tab"><span class="tab-ic">◈</span>보상</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-caption">알림 수신<br>탄소강도 + DR 알림 + 커뮤니티</div>
+  </div>
+
+  <!-- ③ 가전 예약 -->
+  <div class="screen-col">
+    <div class="screen-badge">③ 가전 예약</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sb"><span>10:05</span><span>5G ▌▌▌</span></div>
+        <div class="nav-bar">
+          <div class="nav-back">← 홈</div>
+          <div class="nav-title" style="font-size:13px">세탁기 시간 선택</div>
+          <div style="width:40px"></div>
+        </div>
+
+        <div class="appl-info">
+          <div class="ai-name">삼성 세탁기 WF21 (SmartThings 연결)</div>
+          <div class="ai-row">
+            <div class="ai-stat"><div class="ai-sl">소비 전력 / 1회</div><div class="ai-sv">0.85 kWh</div></div>
+            <div class="ai-stat" style="text-align:right"><div class="ai-sl">소요 시간</div><div class="ai-sv">약 55분</div></div>
+          </div>
+        </div>
+
+        <div class="sec" style="margin-top:8px"><div class="sec-lbl">언제 시작할까요?</div></div>
+        <div class="time-pick">
+          <div class="tp-head">시간대별 탄소강도 — 낮을수록 좋음</div>
+          <div class="tp-slots">
+            <div class="tp-sl on">
+              <div class="tp-h">지금</div>
+              <div class="tp-bar-bg"><div class="tp-bar-i" style="height:16%;background:#A7F3D0"></div></div>
+              <div class="tp-ci">215g</div>
+            </div>
+            <div class="tp-sl">
+              <div class="tp-h">12시</div>
+              <div class="tp-bar-bg"><div class="tp-bar-i" style="height:19%;background:#10B981"></div></div>
+              <div class="tp-ci">235g</div>
+            </div>
+            <div class="tp-sl">
+              <div class="tp-h">15시</div>
+              <div class="tp-bar-bg"><div class="tp-bar-i" style="height:43%;background:#B45309"></div></div>
+              <div class="tp-ci">310g</div>
+            </div>
+            <div class="tp-sl">
+              <div class="tp-h">17시</div>
+              <div class="tp-bar-bg"><div class="tp-bar-i" style="height:60%;background:#92400E"></div></div>
+              <div class="tp-ci">390g</div>
+            </div>
+            <div class="tp-sl">
+              <div class="tp-h">19시</div>
+              <div class="tp-bar-bg"><div class="tp-bar-i" style="height:90%;background:#7F1D1D"></div></div>
+              <div class="tp-ci">540g</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="vs-compare">
+          <div class="vc-box bad">
+            <div class="vc-time r">저녁 7시</div>
+            <div class="vc-num r">459g</div>
+            <div class="vc-unit">CO₂</div>
+          </div>
+          <div class="vs-sep">vs</div>
+          <div class="vc-box good">
+            <div class="vc-time g">지금 시작</div>
+            <div class="vc-num g">183g</div>
+            <div class="vc-unit">CO₂</div>
+          </div>
+        </div>
+        <div class="saving-chip">지금 시작 시 탄소 −276g, 소나무 0.04그루 흡수량</div>
+
+        <div class="btn-duo" style="margin-top:4px">
+          <div class="btn-p">지금 바로 시작</div>
+          <div class="btn-s">예약 설정</div>
+        </div>
+
+        <div class="tab-row" style="margin-top:8px">
+          <div class="tab"><span class="tab-ic">⌂</span>홈</div>
+          <div class="tab on"><span class="tab-ic">⏱</span>예약</div>
+          <div class="tab"><span class="tab-ic">◎</span>리포트</div>
+          <div class="tab"><span class="tab-ic">◈</span>보상</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-caption">가전 예약<br>시간대별 탄소강도 + 즉각 비교</div>
+  </div>
+
+  <!-- ④ 탄소 피드백 -->
+  <div class="screen-col">
+    <div class="screen-badge">④ 탄소 피드백</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sb"><span>11:47</span><span>5G ▌▌▌</span></div>
+        <div class="nav-bar">
+          <div class="nav-back">← 리포트</div>
+          <div class="nav-title" style="font-size:13px">세탁기 결과</div>
+          <div style="width:40px"></div>
+        </div>
+
+        <div class="fb-hero">
+          <div class="fbh-sub">세탁기 1회 — 청정 시간 완료</div>
+          <div class="fbh-title">저녁에 했을 때보다<br>탄소를 63% 줄였습니다.</div>
+          <div class="fbh-row">
+            <div class="fbh-stat"><div class="fbh-v">−276g</div><div class="fbh-l">탄소 절감</div></div>
+            <div class="fbh-stat"><div class="fbh-v">180원</div><div class="fbh-l">요금 절약</div></div>
+            <div class="fbh-stat"><div class="fbh-v">+85p</div><div class="fbh-l">포인트</div></div>
+          </div>
+        </div>
+
+        <div class="bar-cmp">
+          <div class="bc-lbl">탄소 배출 비교 (세탁기 1회 · 0.85kWh)</div>
+          <div class="bc-row">
+            <div class="bc-c">
+              <div class="bc-b" style="height:60px;background:#DC2626;opacity:.8"></div>
+              <div class="bc-cl">저녁 7시라면</div>
+              <div class="bc-cv r">459 g</div>
+            </div>
+            <div class="bc-c">
+              <div class="bc-b" style="height:22px;background:#047857;opacity:.85"></div>
+              <div class="bc-cl">청정 시간 (실제)</div>
+              <div class="bc-cv g">183 g</div>
+            </div>
+          </div>
+          <div class="bc-save">시간 이동으로 276g CO₂ 절감 — 소나무 0.04그루 1년치</div>
+        </div>
+
+        <div class="sec"><div class="sec-lbl">이번 달 누적</div></div>
+        <div class="cum-list">
+          <div class="cum-item">
+            <div class="cum-ic">🌳</div>
+            <div class="cum-body"><div class="cum-v">소나무 2.8그루</div><div class="cum-l">탄소 절감 누적 34 kg CO₂</div></div>
+            <div class="cum-tag">+0.04 오늘</div>
+          </div>
+          <div class="cum-item">
+            <div class="cum-ic">💰</div>
+            <div class="cum-body"><div class="cum-v">3,840원 절약</div><div class="cum-l">요금+포인트 합산</div></div>
+            <div class="cum-tag">+180 오늘</div>
+          </div>
+        </div>
+
+        <div class="rank-box">
+          <div class="rk-l">
+            <div class="rk-label">마포구 이번 달 순위</div>
+            <div class="rk-val">상위 18%</div>
+            <div class="rk-sub">4,820명 중 867위</div>
+          </div>
+          <div class="rk-r">지난달보다<br><strong style="color:#047857">+5% 상승</strong></div>
+        </div>
+
+        <div class="tab-row" style="margin-top:8px">
+          <div class="tab"><span class="tab-ic">⌂</span>홈</div>
+          <div class="tab"><span class="tab-ic">⏱</span>예약</div>
+          <div class="tab on"><span class="tab-ic">◎</span>리포트</div>
+          <div class="tab"><span class="tab-ic">◈</span>보상</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-caption">탄소 피드백<br>즉각 보상 + 누적 + 지역 순위</div>
+  </div>
+
+  <!-- ⑤ 보상 현황 -->
+  <div class="screen-col">
+    <div class="screen-badge">⑤ 보상 현황</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="sb"><span>9:41</span><span>5G ▌▌▌</span></div>
+        <div class="nav-bar">
+          <div class="nav-title">보상 현황</div>
+          <div class="nav-chip">2025년 5월</div>
+        </div>
+
+        <div class="reward-hero">
+          <div class="rh-sub">이번 달 총 절약·적립 예상</div>
+          <div class="rh-total">68,400<span style="font-size:16px;font-weight:600;opacity:.7">원</span></div>
+          <div class="rh-desc">전기요금 절약 + 각종 포인트 합산</div>
+          <div class="rh-prog-row">
+            <span style="font-size:8px;color:rgba(255,255,255,.5)">월 목표 8만원</span>
+            <div class="rh-prog-bg"><div class="rh-prog-fill" style="width:85%"></div></div>
+            <span class="rh-pct">85%</span>
+          </div>
+        </div>
+
+        <div class="reward-summary">
+          <div class="rs-box">
+            <div class="rs-l">탄소 절감</div>
+            <div class="rs-v">34 kg</div>
+            <div class="rs-sub">소나무 2.8그루</div>
+          </div>
+          <div class="rs-box">
+            <div class="rs-l">이번 달 참여</div>
+            <div class="rs-v">47회</div>
+            <div class="rs-sub">청정 시간 이용</div>
+          </div>
+        </div>
+
+        <div class="sec" style="margin-top:8px"><div class="sec-lbl">제도별 자동 적립 내역</div></div>
+        <div class="reward-items">
+          <div class="ri">
+            <div class="ri-ic">⚡</div>
+            <div class="ri-body">
+              <div class="ri-name">국민DR 자동 참여</div>
+              <div class="ri-desc">3회 참여 · 자동 정산</div>
+              <span class="ri-status auto">자동 처리됨</span>
+            </div>
+            <div class="ri-amt">+52,000원</div>
+          </div>
+          <div class="ri">
+            <div class="ri-ic">🌿</div>
+            <div class="ri-body">
+              <div class="ri-name">에너지캐시백</div>
+              <div class="ri-desc">전월 대비 8.2% 절감</div>
+              <span class="ri-status auto">자동 처리됨</span>
+            </div>
+            <div class="ri-amt">+8,200원</div>
+          </div>
+          <div class="ri">
+            <div class="ri-ic">♻️</div>
+            <div class="ri-body">
+              <div class="ri-name">탄소중립포인트</div>
+              <div class="ri-desc">1,240포인트 자동 적립</div>
+              <span class="ri-status auto">자동 적립됨</span>
+            </div>
+            <div class="ri-amt">+6,200원</div>
+          </div>
+          <div class="ri">
+            <div class="ri-ic">🎯</div>
+            <div class="ri-body">
+              <div class="ri-name">월간 챌린지 보너스</div>
+              <div class="ri-desc">30회 달성 보너스 — 진행 중</div>
+              <span class="ri-status pend">적립 예정</span>
+            </div>
+            <div class="ri-amt">+2,000원</div>
+          </div>
+        </div>
+
+        <div class="tab-row" style="margin-top:6px">
+          <div class="tab"><span class="tab-ic">⌂</span>홈</div>
+          <div class="tab"><span class="tab-ic">⏱</span>예약</div>
+          <div class="tab"><span class="tab-ic">◎</span>리포트</div>
+          <div class="tab on"><span class="tab-ic">◈</span>보상</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-caption">보상 현황<br>4개 제도 자동 통합 정산</div>
+  </div>
+
+</div>
+</body>
+</html>

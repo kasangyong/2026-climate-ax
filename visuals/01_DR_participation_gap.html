@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가정 DR 참여 격차</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  /* ── Bloomberg Graphics / NYT style ── */
+  :root {
+    --cream:  #F5F3EE;
+    --ink:    #0D0D0D;
+    --muted:  #555;
+    --rule:   #CCC;
+    --green:  #1B4332;
+    --red:    #B91C1C;
+    --amber:  #78350F;
+    --green-l:#D1FAE5;
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 56px 40px;
+  }
+
+  .wrap { width: 880px; }
+
+  /* 상단 섹션 레이블 */
+  .eyebrow {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--green);
+    border-left: 3px solid var(--green);
+    padding-left: 10px;
+    margin-bottom: 20px;
+  }
+
+  /* 헤드라인 + 히어로 숫자 — 비대칭 그리드 */
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 0;
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 40px;
+  }
+  .hero-left {
+    padding: 28px 32px 28px 0;
+    border-right: 1px solid var(--rule);
+  }
+  .hero-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    margin-bottom: 12px;
+  }
+  .hero-deck {
+    font-family: system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 460px;
+  }
+
+  .hero-right {
+    padding: 28px 0 28px 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .hero-num {
+    font-family: system-ui, sans-serif;
+    font-size: 6.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--red);
+    letter-spacing: -.04em;
+    margin-bottom: 4px;
+  }
+  .hero-num-label {
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* 차트 + 사이드 패널 */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    gap: 40px;
+    margin-bottom: 32px;
+  }
+
+  /* 차트 */
+  .chart-section { }
+  .chart-title {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .chart-wrap { height: 260px; position: relative; }
+
+  /* 사이드 수치 카드들 */
+  .side-stats { display: flex; flex-direction: column; gap: 0; border-left: 1px solid var(--rule); padding-left: 32px; }
+  .stat-item { padding: 16px 0; border-bottom: 1px solid var(--rule); }
+  .stat-item:last-child { border-bottom: none; }
+  .stat-n {
+    font-family: system-ui, sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.02em;
+    margin-bottom: 4px;
+  }
+  .stat-n.green { color: var(--green); }
+  .stat-n.red   { color: var(--red); }
+  .stat-n.amber { color: var(--amber); }
+  .stat-lbl {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .stat-desc {
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* 인사이트 블록 */
+  .insight {
+    border-top: 2px solid var(--ink);
+    padding-top: 20px;
+    display: grid;
+    grid-template-columns: 3px 1fr;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 20px;
+  }
+  .insight-bar { background: var(--red); height: 100%; min-height: 40px; }
+  .insight-text {
+    font-family: system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+  .insight-text strong { color: var(--red); }
+
+  /* 출처 */
+  .source-line {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--rule);
+    padding-top: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .wrap { animation: fadein 400ms cubic-bezier(.2,0,0,1); }
+    @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">사회문제 해결 1-3 &nbsp;/&nbsp; 가정 수요반응(DR) 참여 공백</div>
+
+  <div class="hero-grid">
+    <div class="hero-left">
+      <div class="hero-title">보상이 43배 높은데<br>참여율은 222분의 1이다</div>
+      <div class="hero-deck">
+        국민DR의 보상 단가는 에너지캐시백의 최대 43배(1,300원 vs 30~100원/kWh)다.
+        그러나 실제 참여 가구는 에너지캐시백의 222분의 1에 불과하다.
+        단가 문제가 아니라 신청·참여·정산 전 과정의 접근성 문제다.
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-num">0.04%</div>
+      <div class="hero-num-label">국민DR 실제 참여율<br>AMI 보급 가구(2,005만 호) 기준</div>
+    </div>
+  </div>
+
+  <div class="body-grid">
+    <div class="chart-section">
+      <div class="chart-title">가구 수 비교 (단위: 만 호)</div>
+      <div class="chart-wrap">
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+
+    <div class="side-stats">
+      <div class="stat-item">
+        <div class="stat-lbl">잠재 DR 자원</div>
+        <div class="stat-n green">2,005만</div>
+        <div class="stat-desc">AMI 계량기 설치 완료.<br>기술 조건은 이미 충족.</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-lbl">에너지캐시백</div>
+        <div class="stat-n amber">166만</div>
+        <div class="stat-desc">30~100원/kWh 보상.<br>절약형 수요반응 제도.</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-lbl">국민DR 실제 참여</div>
+        <div class="stat-n red">7,430</div>
+        <div class="stat-desc">1,300원/kWh — 최대 43배 높음.<br>그러나 참여 가구는 1/222.</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-lbl">청정 시간 목표</div>
+        <div class="stat-n green">100만+</div>
+        <div class="stat-desc">1탭 자동 참여로 3단계<br>장벽을 동시 제거.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-bar"></div>
+    <div class="insight-text">
+      국민DR은 에너지캐시백보다 최대 <strong>43배</strong> 높은 보상을 제공하지만, 참여 가구는 <strong>1/222</strong>에 그친다.
+      청정 시간은 전력거래소 가입(장벽①), 발령마다 개별 신청(장벽②), 수동 정산(장벽③) 세 가지를 앱 1탭으로 자동화해
+      2,005만 AMI 가구의 잠재 DR 자원을 실제 계통 안정 자원으로 전환한다.
+    </div>
+  </div>
+
+  <div class="source-line">
+    <span>출처: 한국전력공사 (AMI·에너지캐시백, 2024~2025) / 전력거래소 국민DR 공식 자료 (2025)</span>
+    <span>2026 기후부 AX 아이디어 경진대회 — 청정 시간</span>
+  </div>
+</div>
+
+<script>
+const ctx = document.getElementById('chart').getContext('2d');
+
+const labelPlugin = {
+  id: 'inlineLabels',
+  afterDatasetsDraw(chart) {
+    const {ctx: c, scales:{x,y}, data} = chart;
+    c.save();
+    data.datasets[0].data.forEach((val, i) => {
+      const bar = chart.getDatasetMeta(0).data[i];
+      const display = val >= 1 ? val.toLocaleString() + '만 호' : Math.round(val*10000).toLocaleString() + '호';
+      // 수치 레이블
+      c.font = '700 13px Menlo, Consolas, monospace';
+      c.fillStyle = '#0D0D0D';
+      c.textAlign = 'left';
+      c.textBaseline = 'middle';
+      c.fillText(display, bar.x + 8, bar.y);
+    });
+    c.restore();
+  }
+};
+
+new Chart(ctx, {
+  type: 'bar',
+  plugins: [labelPlugin],
+  data: {
+    labels: ['AMI 보급\n(잠재 DR 자원)', '에너지캐시백\n(30~100원/kWh)', '국민DR\n(1,300원/kWh)'],
+    datasets: [{
+      data: [2005, 166, 0.743],
+      backgroundColor: ['#1B4332', '#78350F', '#B91C1C'],
+      borderWidth: 0,
+      borderRadius: 2,
+      barThickness: 36,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (c) => c.raw >= 1 ? ` ${c.raw.toLocaleString()}만 호` : ` ${Math.round(c.raw*10000).toLocaleString()}호`
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: '#E0DDD6', lineWidth: 1 },
+        border: { color: '#CCC', dash: [0] },
+        ticks: {
+          font: { size:11, family:'Menlo, Consolas, monospace' },
+          color: '#777',
+          callback: (v) => v === 0 ? '0' : v + '만',
+        }
+      },
+      y: {
+        grid: { display: false },
+        border: { color: '#0D0D0D', width: 2 },
+        ticks: {
+          font: { size: 13, family: 'Georgia, serif', weight: '400' },
+          color: '#0D0D0D',
+          padding: 8,
+        }
+      }
+    },
+    animation: { duration: 0 }
+  }
+});
+</script>
+</body>
+</html>

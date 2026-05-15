@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>청정 시간 — 6. 사회문제해결 / 8. 기타</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --cream:  #FFFFFF;
+    --ink:    #0D0D0D;
+    --muted:  #555;
+    --rule:   #CCC;
+    --green:  #1B4332;
+    --red:    #B91C1C;
+    --amber:  #78350F;
+    --green-l:#D1FAE5;
+    --red-l:  #FEE2E2;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Batang', '바탕체', 'Batang', serif;
+    padding: 56px 40px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* ── 공통 컴포넌트 ── */
+
+  .cover {
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding: 28px 0 20px;
+    margin-bottom: 64px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+  }
+  .cover-label {
+    font-family: 'Batang', '바탕체', serif;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .12em;
+    color: var(--green); margin-bottom: 10px;
+  }
+  .cover-title { font-size: 2.6rem; font-weight: 700; line-height: 1.2; letter-spacing: -.02em; margin-bottom: 8px; }
+  .cover-sub { font-family: 'Batang', '바탕체', serif; font-size: 14px; color: var(--muted); line-height: 1.7; }
+  .cover-meta { text-align: right; font-family: 'Batang', '바탕체', serif; font-size: 12px; color: var(--muted); line-height: 1.8; }
+
+  /* 섹션 구분 */
+  .chapter {
+    border-top: 3px solid var(--ink);
+    padding-top: 20px;
+    margin-bottom: 56px;
+  }
+  .chapter-num {
+    font-family: 'Batang', '바탕체', serif;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .12em;
+    color: var(--green);
+    border-left: 3px solid var(--green);
+    padding-left: 10px;
+    margin-bottom: 8px;
+  }
+  .chapter-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+  .chapter-desc {
+    font-family: 'Batang', '바탕체', serif;
+    font-size: 13px; color: var(--muted);
+    padding: 6px 0 16px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* 개별 항목 */
+  .item { margin-bottom: 48px; }
+
+  .item-header {
+    border-top: 2px solid var(--ink);
+    padding-top: 18px;
+    display: grid;
+    gap: 0;
+    margin-bottom: 0;
+  }
+  /* 히어로 그리드 (제목 + 큰 숫자) */
+  .item-header.has-hero { grid-template-columns: 1fr 280px; gap: 0; }
+
+  .item-eyebrow {
+    font-family: 'Batang', '바탕체', serif;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .1em;
+    color: var(--green);
+    border-left: 3px solid var(--green);
+    padding-left: 8px;
+    margin-bottom: 10px;
+  }
+  .item-title { font-size: 1.7rem; font-weight: 700; line-height: 1.25; letter-spacing: -.02em; margin-bottom: 10px; }
+  .item-deck { font-family: 'Batang', '바탕체', serif; font-size: 13.5px; color: var(--muted); line-height: 1.75; margin-bottom: 0; }
+
+  /* 히어로 숫자 블록 */
+  .hero-num-block {
+    border-left: 1px solid var(--rule);
+    padding-left: 32px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .hero-big {
+    font-family: 'Batang', '바탕체', serif;
+    font-size: 5.5rem; font-weight: 800; line-height: 1;
+    letter-spacing: -.04em; margin-bottom: 4px;
+  }
+  .hero-big.red   { color: var(--red); }
+  .hero-big.green { color: var(--green); }
+  .hero-big.amber { color: var(--amber); }
+  .hero-lbl { font-family: 'Batang', '바탕체', serif; font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* 본문 그리드 */
+  .body-grid {
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    gap: 40px;
+    padding: 24px 0 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .body-grid.full { grid-template-columns: 1fr; }
+
+  /* 사이드 스탯 */
+  .side-stats { border-left: 1px solid var(--rule); padding-left: 28px; display: flex; flex-direction: column; gap: 0; }
+  .stat { padding: 14px 0; border-bottom: 1px solid var(--rule); }
+  .stat:last-child { border-bottom: none; }
+  .stat-lbl { font-family: 'Batang', '바탕체', serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 2px; }
+  .stat-n { font-family: 'Batang', '바탕체', serif; font-size: 1.8rem; font-weight: 800; line-height: 1; letter-spacing: -.02em; margin-bottom: 3px; }
+  .stat-n.g { color: var(--green); }
+  .stat-n.r { color: var(--red); }
+  .stat-n.a { color: var(--amber); }
+  .stat-desc { font-family: 'Batang', '바탕체', serif; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+  /* 인사이트 바 */
+  .insight {
+    display: grid;
+    grid-template-columns: 3px 1fr;
+    gap: 18px;
+    align-items: start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .insight-bar-r { background: var(--red); }
+  .insight-bar-g { background: var(--green); }
+  .insight-bar-a { background: var(--amber); }
+  .insight-text { font-family: 'Batang', '바탕체', serif; font-size: 14px; line-height: 1.75; color: var(--ink); }
+  .insight-text strong.r { color: var(--red); }
+  .insight-text strong.g { color: var(--green); }
+  .insight-text strong.a { color: var(--amber); }
+
+  /* 테이블 */
+  table { width: 100%; border-collapse: collapse; font-family: 'Batang', '바탕체', serif; font-size: 13px; margin-bottom: 0; }
+  th {
+    text-align: left; padding: 8px 12px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--muted); border-bottom: 2px solid var(--ink);
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--rule); color: var(--ink); line-height: 1.5; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td strong { font-weight: 700; color: var(--ink); }
+
+  /* 차트 */
+  .chart-wrap { height: 220px; position: relative; }
+
+  /* 콜아웃 3단 */
+  .callouts { display: grid; gap: 0; border-top: 1px solid var(--rule); }
+  .callouts.col3 { grid-template-columns: 1fr 1fr 1fr; }
+  .callouts.col2 { grid-template-columns: 1fr 1fr; }
+  .callout { padding: 16px 16px 16px 0; border-right: 1px solid var(--rule); }
+  .callout:last-child { border-right: none; }
+  .callout-kicker { font-family: 'Batang', '바탕체', serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+  .callout-kicker.g { color: var(--green); }
+  .callout-kicker.r { color: var(--red); }
+  .callout-kicker.a { color: var(--amber); }
+  .callout-num { font-family: 'Batang', '바탕체', serif; font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 6px; letter-spacing: -.02em; }
+  .callout-num.g { color: var(--green); }
+  .callout-num.r { color: var(--red); }
+  .callout-num.a { color: var(--amber); }
+  .callout-body { font-family: 'Batang', '바탕체', serif; font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .callout-body strong { color: var(--ink); }
+
+  /* 배리어 박스 */
+  .barrier-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin: 16px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .barrier { padding: 14px 14px 14px 0; border-right: 1px solid var(--rule); }
+  .barrier:last-child { border-right: none; }
+  .barrier-label { font-family: 'Batang', '바탕체', serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--red); margin-bottom: 4px; }
+  .barrier-title { font-family: 'Batang', '바탕체', serif; font-size: 12.5px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+  .barrier-arrow { font-family: 'Batang', '바탕체', serif; font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  /* 출처 */
+  .source { font-family: 'Batang', '바탕체', serif; font-size: 11px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 10px; margin-top: 8px; display: flex; justify-content: space-between; }
+
+  /* 페이지 구분선 */
+  .page-break { border: none; border-top: 1px dashed var(--rule); margin: 48px 0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    body { animation: fadein 400ms cubic-bezier(.2,0,0,1); }
+    @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── 표지 ── -->
+<div class="cover">
+  <div>
+    <div class="cover-label">2026 기후에너지환경부 공공데이터 활용 AX 아이디어 경진대회</div>
+    <div class="cover-title">청정 시간<br>(Green Hour)</div>
+    <div class="cover-sub">AI 기반 가정 부문 청정 에너지 매개 플랫폼<br>6. 사회문제 해결 &nbsp;/&nbsp; 8. 기타</div>
+  </div>
+  <div class="cover-meta">
+    제출 문서<br>
+    사회문제해결 6개 항목<br>
+    기타 5개 항목<br>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════ -->
+<!--  6. 사회문제 해결               -->
+<!-- ════════════════════════════════ -->
+
+<div class="chapter">
+  <div class="chapter-num">6. 사회문제 해결</div>
+  <div class="chapter-title">청정 시간은 에너지 시스템이 직면한<br>구조적 문제 6가지를 동시에 해결한다</div>
+  <div class="chapter-desc">최근 이슈화 되고 있는 사회 문제 해결에 기여할 수 있는지</div>
+</div>
+
+
+<!-- 6-1 -->
+<div class="item">
+  <div class="item-header has-hero">
+    <div>
+      <div class="item-eyebrow">6-1 &nbsp;/&nbsp; AI 시대 전력 수요 폭증</div>
+      <div class="item-title">AI 데이터센터 수요는 폭증하고<br>재생에너지 공급은 들쭉날쭉하다</div>
+      <div class="item-deck">
+        한국 데이터센터 전력 수요는 2025년 4,461MW → 2028년 6,175MW(연 +11%). 2038년에는 2025년의 약 6배로 예상된다(산업부 전력수급기본계획).
+        AI 서버는 24시간 일정한 수요를 필요로 하지만 재생에너지는 시간·날씨에 따라 급변한다.
+        이 불일치를 LNG 화력이 메우면서 탄소가 증가하는 역설이 발생한다.
+      </div>
+    </div>
+    <div class="hero-num-block">
+      <div class="hero-big amber">6배</div>
+      <div class="hero-lbl">2038년 데이터센터 전력 수요<br>2025년 대비 예상 증가</div>
+    </div>
+  </div>
+
+  <div class="body-grid full" style="padding-top:16px">
+    <div>
+      <div class="callouts col3">
+        <div class="callout">
+          <div class="callout-kicker g">청정 시간 해법</div>
+          <div class="callout-num g">30~40%</div>
+          <div class="callout-body">가정 전력 사용 중 유연 부하 비율. 세탁기·식기세척기·EV 충전 등 시간 이동이 가능한 부하. <strong>AI 예측으로 재생E 잉여 시간을 사전 공지해 이동 유도.</strong></div>
+        </div>
+        <div class="callout">
+          <div class="callout-kicker g">피크 감축 효과</div>
+          <div class="callout-num g">−1 GW</div>
+          <div class="callout-body">가정 5% 참여 시 피크 수요 감축 추산. 발전소 추가 건설 없이 수요-공급 불일치 완화.</div>
+        </div>
+        <div class="callout">
+          <div class="callout-kicker g">건설 회피 비용</div>
+          <div class="callout-num g">5천억원</div>
+          <div class="callout-body">LNG 복합화력 500MW급 1기 건설비 기준. <strong>CO₂ 감축 약 100만 톤/년</strong> (피크-오프피크 탄소강도 차이 × 이동 전력량).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="insight">
+    <div class="insight-bar-g"></div>
+    <div class="insight-text">발전소를 짓는 것보다 수요 시간을 이동시키는 것이 빠르고 저렴하다. 청정 시간은 추가 인프라 없이 기존 AMI 2,005만 호를 수요 자원으로 전환한다.</div>
+  </div>
+</div>
+
+<hr class="page-break">
+
+<!-- 6-2 -->
+<div class="item">
+  <div class="item-header has-hero">
+    <div>
+      <div class="item-eyebrow">6-2 &nbsp;/&nbsp; 재생에너지 출력제한</div>
+      <div class="item-title">태양광이 남아서 버려지는 전기,<br>2040년엔 서울시 연간 소비량의 1/3</div>
+      <div class="item-deck">
+        재생에너지 보급이 늘면서 전력망이 흡수하지 못하는 잉여 전기가 발생한다.
+        2023년 출력제한량은 약 700GWh 이상(전력거래소). 2040년 예상 출력제한은 7.8~23.4TWh로 늘어난다(제10차 전력수급기본계획).
+        대규모 ESS(수조원)나 송전망 확충(10년+)이 아닌 가정 수요 이동이 가장 빠르고 저렴한 해법이다.
+      </div>
+    </div>
+    <div class="hero-num-block">
+      <div class="hero-big red">700<span style="font-size:2.5rem">GWh</span></div>
+      <div class="hero-lbl">2023년 실제 출력제한량<br>2040년엔 최대 23.4 TWh 예상</div>
+    </div>
+  </div>
+
+  <div class="body-grid full" style="padding-top:16px">
+    <table>
+      <tr><th>지표</th><th>현황</th><th>청정 시간 효과</th></tr>
+      <tr><td>연간 출력제한량</td><td>700GWh+ (2023)</td><td>−2TWh/년 (가정 5% 시간 이동 시)</td></tr>
+      <tr><td>2040년 예상</td><td>7.8~23.4 TWh</td><td>200만 가구 1년 사용량 회수</td></tr>
+      <tr><td>재생에너지 사업자</td><td>출력제한으로 수익 손실</td><td>버려지던 전기가 판매 전력으로 전환</td></tr>
+      <tr><td>대안(ESS·송전망)</td><td>수조원, 10년+ 소요</td><td>신규 인프라 0건 — 기존 AMI 활용</td></tr>
+    </table>
+  </div>
+  <div class="insight">
+    <div class="insight-bar-g"></div>
+    <div class="insight-text">출력제한 예상 시간을 청정 시간으로 지정하면 가정이 잉여 전력을 흡수한다. 버려지는 재생에너지를 가정 수요로 전환하는 가장 빠른 방법이다.</div>
+  </div>
+</div>
+
+<hr class="page-break">
+
+<!-- 6-3 -->
+<div class="item">
+  <div class="item-header has-hero">
+    <div>
+      <div class="item-eyebrow">6-3 &nbsp;/&nbsp; 가정 DR 참여 정책 공백</div>
+      <div class="item-title">보상이 43배 높은데<br>참여율은 222분의 1이다</div>
+      <div class="item-deck">
+        국민DR의 보상 단가는 1,300원/kWh로 에너지캐시백(30~100원/kWh)보다 최대 43배 높다.
+        그러나 실제 참여 가구는 7,430호로 에너지캐시백(166만 호)의 1/222에 불과하다.
+        단가 문제가 아니라 신청·참여·정산 전 과정의 접근성 문제다.
+      </div>
+    </div>
+    <div class="hero-num-block">
+      <div class="hero-big red">0.04%</div>
+      <div class="hero-lbl">국민DR 실제 참여율<br>AMI 보급 가구(2,005만 호) 기준</div>
+    </div>
+  </div>
+
+  <div class="body-grid">
+    <div>
+      <div class="chart-wrap"><canvas id="drChart"></canvas></div>
+    </div>
+    <div class="side-stats">
+      <div class="stat">
+        <div class="stat-lbl">잠재 DR 자원</div>
+        <div class="stat-n g">2,005만</div>
+        <div class="stat-desc">AMI 계량기 설치 완료.<br>기술 조건은 이미 충족.</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">에너지캐시백</div>
+        <div class="stat-n a">166만</div>
+        <div class="stat-desc">30~100원/kWh 보상.<br>절약형 수요반응 제도.</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">국민DR 실제 참여</div>
+        <div class="stat-n r">7,430</div>
+        <div class="stat-desc">1,300원/kWh — 최대 43배 높음.<br>그러나 참여 가구는 1/222.</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">청정 시간 목표</div>
+        <div class="stat-n g">100만+</div>
+        <div class="stat-desc">1탭 자동 참여로 3단계<br>장벽을 동시 제거.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="barrier-row">
+    <div class="barrier">
+      <div class="barrier-label">장벽 ①</div>
+      <div class="barrier-title">알기 어렵다</div>
+      <div class="barrier-arrow">→ 매일 아침 국민DR 발령 가능성<br>+ 예상 보상액 자동 알림</div>
+    </div>
+    <div class="barrier">
+      <div class="barrier-label">장벽 ②</div>
+      <div class="barrier-title">참여하기 어렵다</div>
+      <div class="barrier-arrow">→ 앱 1탭으로 자동 참여<br>(가입 0회, 신청 0회)</div>
+    </div>
+    <div class="barrier">
+      <div class="barrier-label">장벽 ③</div>
+      <div class="barrier-title">정산이 어렵다</div>
+      <div class="barrier-arrow">→ AMI 자동 측정 → 전기요금<br>자동 차감 (수동 확인 0회)</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-bar-r"></div>
+    <div class="insight-text">국민DR은 에너지캐시백보다 최대 <strong class="r">43배</strong> 높은 보상을 제공하지만, 참여 가구는 <strong class="r">1/222</strong>에 그친다. 청정 시간은 3단계 장벽을 자동화해 2,005만 AMI 가구의 잠재 DR 자원을 실제 계통 안정 자원으로 전환한다.</div>
+  </div>
+  <div class="source">
+    <span>출처: 한국전력공사 (AMI·에너지캐시백, 2024~2025) / 전력거래소 국민DR 공식 자료 (2025)</span>
+  </div>
+</div>
+
+<hr class="page-break">
+
+<!-- 6-4 -->
+<div class="item">
+  <div class="item-header has-hero">
+    <div>
+      <div class="item-eyebrow">6-4 &nbsp;/&nbsp; 에너지 복지 사각지대</div>
+      <div class="item-title">지원이 가장 필요한 계층이<br>가장 적은 혜택을 받는 역설</div>
+      <div class="item-deck">
+        에너지바우처 수급 가구 약 130만 호가 잔액 파악의 어려움, 디지털 접근성 부재, 추가 보상 제도 미인지로 인해 혜택을 제대로 받지 못하고 있다(한국에너지공단).
+        에너지캐시백·국민DR 등 추가 보상 제도는 아예 인지하지 못하는 경우가 대부분이다.
+      </div>
+    </div>
+    <div class="hero-num-block">
+      <div class="hero-big amber">130만</div>
+      <div class="hero-lbl">에너지바우처 수급 가구<br>자동화 대상 — 신청 0회</div>
+    </div>
+  </div>
+
+  <div class="body-grid full" style="padding-top:16px">
+    <table>
+      <tr><th>문제</th><th>해결 방식</th><th>기대 효과</th></tr>
+      <tr><td>바우처 잔액을 모름</td><td>실시간 잔액 알림</td><td>미소진으로 인한 복지 손실 제거</td></tr>
+      <tr><td>에너지캐시백 미신청</td><td>자동 옵트인 (별도 신청 0회)</td><td>130만 가구 자동 보상 적립</td></tr>
+      <tr><td>국민DR 미인지</td><td>자동 참여 설정 안내</td><td>연 5~15만원 보상 자동 획득</td></tr>
+      <tr><td>디지털 접근성 부재</td><td>큰 글자·음성·자녀 공유 기능</td><td>디지털 격차 없이 에너지 복지 자동화</td></tr>
+    </table>
+  </div>
+  <div class="insight">
+    <div class="insight-bar-a"></div>
+    <div class="insight-text">에너지바우처 수급자 DB(에너지공단 API)와 연동해 <strong class="g">Default Opt-In</strong> — 별도 신청 없이 자동 가입, 자동 적립, 자동 정산. 가장 취약한 계층이 가장 먼저 혜택을 받는 구조를 설계한다.</div>
+  </div>
+</div>
+
+<hr class="page-break">
+
+<!-- 6-5 -->
+<div class="item">
+  <div class="item-header">
+    <div class="item-eyebrow">6-5 &nbsp;/&nbsp; 환경 행동 동기 부족</div>
+    <div class="item-title">불편 없이 행동하고, 행동 직후 보상받는다</div>
+    <div class="item-deck">
+      기존 환경 캠페인은 행동 비용(즉각적 불편)은 크고 보상(추상적·장기적)은 불분명하다. 행동경제학의 손실 회피 편향(Loss Aversion) — 즉각적 손실이 장기적 이익보다 심리적으로 훨씬 크게 느껴진다 — 이 지속 참여를 막는 구조적 원인이다.
+    </div>
+  </div>
+
+  <div class="body-grid full" style="padding-top:16px">
+    <table>
+      <tr><th>원칙</th><th>기존 캠페인</th><th>청정 시간</th></tr>
+      <tr><td><strong>즉각성</strong></td><td>보상 수개월 후</td><td>행동 직후 피드백 ("탄소 −52%, 180원 절약")</td></tr>
+      <tr><td><strong>구체성</strong></td><td>"탄소중립에 기여"</td><td>"소나무 2.1그루 + 7,740원"</td></tr>
+      <tr><td><strong>부담 최소화</strong></td><td>전기 사용 자체를 줄이기</td><td>사용 시간만 바꾸기 — 불편 없음</td></tr>
+      <tr><td><strong>사회적 동기</strong></td><td>없음</td><td>지역 순위, 이웃 비교</td></tr>
+      <tr><td><strong>자동화</strong></td><td>매번 의식적 노력 필요</td><td>자동 모드 — 설정 1회로 의식 불필요</td></tr>
+    </table>
+  </div>
+  <div class="insight">
+    <div class="insight-bar-g"></div>
+    <div class="insight-text">영국 Octopus Energy 참여자의 <strong class="g">68%</strong>가 1년 후에도 시간 이동 습관을 유지했다. 즉각적 보상과 게임화가 장기 행동 변화를 이끈다는 해외 실증 근거가 있다.</div>
+  </div>
+</div>
+
+<hr class="page-break">
+
+<!-- 6-6 -->
+<div class="item">
+  <div class="item-header has-hero">
+    <div>
+      <div class="item-eyebrow">6-6 &nbsp;/&nbsp; 에너지 정보 비대칭</div>
+      <div class="item-title">같은 1kWh라도 시간대에 따라<br>탄소가 2.7배 다르다 — 그러나 모른다</div>
+      <div class="item-deck">
+        한국 시민은 지금 쓰는 전기가 어디서 왔는지, 탄소를 얼마나 배출하는지 알 수 없다.
+        공식 발표는 연간 평균값(0.4434 tCO₂/MWh, 온실가스종합정보센터)만 존재한다.
+        실제 시간대별 탄소강도는 피크 520~550 vs 청정 시간 200~250 gCO₂/kWh — 최대 2.7배 차이이지만 공개되지 않는다.
+        영국(National Grid ESO), 미국(WattTime), EU(Electricity Maps)는 이미 실시간 공개 중이다.
+      </div>
+    </div>
+    <div class="hero-num-block">
+      <div class="hero-big red">2.7배</div>
+      <div class="hero-lbl">피크 vs 청정 시간 탄소강도 차이<br>시민에게 공개되지 않음</div>
+    </div>
+  </div>
+
+  <div class="body-grid full" style="padding-top:16px">
+    <div class="callouts col3">
+      <div class="callout">
+        <div class="callout-kicker r">피크 탄소강도</div>
+        <div class="callout-num r">520~550<br><span style="font-size:1rem">gCO₂/kWh</span></div>
+        <div class="callout-body">오후 6~9시. LNG 화력 집중 가동 구간. 세탁기 1회 기준 <strong>459g CO₂</strong>.</div>
+      </div>
+      <div class="callout">
+        <div class="callout-kicker g">청정 시간 탄소강도</div>
+        <div class="callout-num g">200~250<br><span style="font-size:1rem">gCO₂/kWh</span></div>
+        <div class="callout-body">오전 11시~오후 1시. 태양광 최대 구간. 세탁기 1회 기준 <strong>183g CO₂</strong> — 절감 276g.</div>
+      </div>
+      <div class="callout">
+        <div class="callout-kicker a">청정 시간의 해법</div>
+        <div class="callout-num a">한국 최초</div>
+        <div class="callout-body">EPSIS 발전 믹스 × 발전원별 배출계수 실시간 연산. 24시간 예측 타임라인 가정에 공개.</div>
+      </div>
+    </div>
+  </div>
+  <div class="insight">
+    <div class="insight-bar-g"></div>
+    <div class="insight-text">청정 시간이 시범 서비스를 통해 효과를 입증하면, <strong class="g">시간대별 탄소 배출계수 공시 의무화</strong> 정책의 근거로 활용할 수 있다. 기업 RE100 시간별 재생에너지 매칭 인프라의 선행 구축이기도 하다.</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════ -->
+<!--  8. 기타                        -->
+<!-- ════════════════════════════════ -->
+
+<div class="chapter" style="margin-top:64px">
+  <div class="chapter-num">8. 기타</div>
+  <div class="chapter-title">가점 항목 및 정책 제언</div>
+  <div class="chapter-desc">국가중점데이터 활용 / 공공데이터 개방 수요 / 정책 제언 / 심사 기준 대응 / 공모작 강점</div>
+</div>
+
+
+<!-- 8-1 -->
+<div class="item">
+  <div class="item-header">
+    <div class="item-eyebrow">8-1 &nbsp;/&nbsp; 국가중점데이터 활용 (가점)</div>
+    <div class="item-title">국가중점데이터 4종을 핵심 기능에 직접 활용한다</div>
+    <div class="item-deck" style="margin-bottom:16px">
+      행안부 공공데이터포털이 지정한 국가중점데이터 4종이 융합될 때 비로소 "지금 세탁기를 돌리면 탄소가 얼마인지"를 계산할 수 있다. 개별 데이터 하나만으로는 불가능하다.
+    </div>
+  </div>
+
+  <div class="body-grid full">
+    <table>
+      <tr><th>#</th><th>데이터명</th><th>제공기관</th><th>활용 방식</th></tr>
+      <tr><td><strong>①</strong></td><td>한국전력 AMI 전력 사용량 데이터</td><td>한국전력공사</td><td>가정 전력 패턴 분석, NILM 가전 분리, DR 감축량 측정</td></tr>
+      <tr><td><strong>②</strong></td><td>전력거래소 발전 정보 (EPSIS)</td><td>한국전력거래소</td><td>시간별 발전 믹스 수집, 탄소강도(gCO₂/kWh) 실시간 산출</td></tr>
+      <tr><td><strong>③</strong></td><td>에너지효율등급 제품 정보</td><td>한국에너지공단</td><td>가전 효율 분석, 절감 효과 추산, 교체 권고 알림</td></tr>
+      <tr><td><strong>④</strong></td><td>탄소중립포인트 에너지 데이터</td><td>환경부</td><td>절감 실적 자동 집계, 포인트 자동 적립, 보상 통합 정산</td></tr>
+    </table>
+  </div>
+  <div class="insight">
+    <div class="insight-bar-g"></div>
+    <div class="insight-text">AMI(얼마나 쓰는가) + EPSIS(어디서 오는가) + 배출계수(탄소가 얼마인가) + 효율등급(어떤 가전인가) — 4종이 실시간 융합되어야 가구 맞춤 청정 시간 알림이 생성된다.</div>
+  </div>
+</div>
+
+<hr class="page-break">
+
+<!-- 8-2 -->
+<div class="item">
+  <div class="item-header">
+    <div class="item-eyebrow">8-2 &nbsp;/&nbsp; 공공데이터 개방 수요</div>
+    <div class="item-title">완전한 서비스를 위해 추가 개방이 필요한 데이터 6종</div>
+    <div class="item-deck" style="margin-bottom:16px">
+      청정 시간이 완전히 작동하기 위해 추가 개방·표준화가 필요한 데이터 6종을 정책 제언으로 병행 추진한다.
+    </div>
+  </div>
+
+  <div class="body-grid full">
+    <table>
+      <tr><th>#</th><th>데이터</th><th>현재 상태</th><th>개방 필요 이유</th></tr>
+      <tr><td><strong>①</strong></td><td>한전 AMI LP 1분 단위 해상도</td><td>15분 단위만 개방</td><td>NILM 가전 분리 정확도 향상 (현재 15분은 150배 해상도 차이)</td></tr>
+      <tr><td><strong>②</strong></td><td>시간대별 탄소 배출계수 공시</td><td>연간 평균값만 발표</td><td>시민·기업 탄소 행동 근거 데이터 부재</td></tr>
+      <tr><td><strong>③</strong></td><td>EPSIS 발전 믹스 24시간 예측 API</td><td>실시간만 표준 공개, 예측은 비공식</td><td>청정 시간 사전 알림 정확도 향상</td></tr>
+      <tr><td><strong>④</strong></td><td>국민DR 발령 신호 통합 표준 API</td><td>한전·전력거래소 개별 채널 분산</td><td>민간 서비스 연동 기반 마련</td></tr>
+      <tr><td><strong>⑤</strong></td><td>한전 에너지캐시백 자동 신청·정산 API</td><td>사용자 수동 신청 구조</td><td>4개 제도 자동 정산 완성에 필수</td></tr>
+      <tr><td><strong>⑥</strong></td><td>분산에너지 시장 가정 부문 참여 표준</td><td>시행령 내 가정 VPP 절차 미비</td><td>가정 DR 집계 VPP 도매시장 참여 근거</td></tr>
+    </table>
+  </div>
+</div>
+
+<hr class="page-break">
+
+<!-- 8-3 -->
+<div class="item">
+  <div class="item-header">
+    <div class="item-eyebrow">8-3 &nbsp;/&nbsp; 정책 제언</div>
+    <div class="item-title">청정 시간의 도입·확산을 위한 정책 제언 5가지</div>
+  </div>
+
+  <div class="body-grid full" style="padding-top:16px">
+    <table>
+      <tr><th>#</th><th>제언</th><th>핵심 내용</th><th>기대 효과</th></tr>
+      <tr>
+        <td><strong>①</strong></td>
+        <td><strong>국가 표준 매개 플랫폼 지정</strong></td>
+        <td>기후에너지환경부 + 한전 + 전력거래소 공동 운영 플랫폼. 분산에너지 시장 매출 일부로 재원 조달.</td>
+        <td>4개 제도 접근성 통합. 가정 DR 0.04% → 5%</td>
+      </tr>
+      <tr>
+        <td><strong>②</strong></td>
+        <td><strong>시간대별 탄소 배출계수 공시 의무화</strong></td>
+        <td>온실가스종합정보센터 + 전력거래소 30분 단위 탄소강도 Open API 공시. 영국 National Grid ESO 모델 참조.</td>
+        <td>시민 탄소 행동 근거 확보. 기업 RE100 시간별 매칭</td>
+      </tr>
+      <tr>
+        <td><strong>③</strong></td>
+        <td><strong>국민DR 자동 참여 옵션 표준화</strong></td>
+        <td>마이데이터 동의 시 DR 발령 자동 참여. AMI 자동 측정 → 자동 정산 법제화.</td>
+        <td>국민DR 참여율 0.04% → 5% 이상 (잠재력 100배)</td>
+      </tr>
+      <tr>
+        <td><strong>④</strong></td>
+        <td><strong>취약계층 에너지 서비스 Default Opt-In</strong></td>
+        <td>에너지바우처 수급자 자동 가입. 큰 글자·음성·가족 공유 취약계층 모드 표준화.</td>
+        <td>130만 취약 가구 에너지 복지 자동화</td>
+      </tr>
+      <tr>
+        <td><strong>⑤</strong></td>
+        <td><strong>마이데이터 + 엣지 추론 표준 가이드</strong></td>
+        <td>차등 프라이버시(Differential Privacy) 적용 가이드. NILM 모델 단말 실행 옵션 심사 기준 포함.</td>
+        <td>개인정보 보호 강화 → 마이데이터 동의율 향상</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<hr class="page-break">
+
+<!-- 8-4 -->
+<div class="item">
+  <div class="item-header">
+    <div class="item-eyebrow">8-4 &nbsp;/&nbsp; 심사 기준 대응</div>
+    <div class="item-title">5개 심사 기준별 근거 및 수치</div>
+  </div>
+
+  <div class="body-grid full" style="padding-top:16px">
+    <table>
+      <tr><th>심사 기준</th><th>청정 시간의 근거</th><th>핵심 수치</th></tr>
+      <tr><td><strong>데이터 융합성</strong></td><td>국가중점데이터 4종 + 기상청 + 배출계수 = 6종 실시간 융합. 개별 데이터만으로는 산출 불가.</td><td>AMI·EPSIS·효율등급·탄소포인트 동시 활용</td></tr>
+      <tr><td><strong>창의성·독창성</strong></td><td>Carbon-Aware Computing 한국 가정 최초 적용. 4개 에너지 제도 자동 통합 세계 최초 수준.</td><td>NILMFormer KDD 2025 SOTA (arXiv:2506.05880)</td></tr>
+      <tr><td><strong>논리적 타당성</strong></td><td>모든 핵심 수치 공식 출처 기반. 추정값은 산출 근거 명시.</td><td>전력거래소·한전·온실가스종합정보센터</td></tr>
+      <tr><td><strong>실현 가능성</strong></td><td>법 개정 0건. 신규 인프라 0건. 기존 자원만 활용.</td><td>분산에너지 활성화 특별법 2024.6 시행 완료</td></tr>
+      <tr><td><strong>사회적 파급력</strong></td><td>잠재 사용자 2,005만 가구 (한국 전체의 약 90%). CO₂ 감축 약 100만 톤/년.</td><td>LNG 1기 건설 회피 약 5천억원 절감</td></tr>
+    </table>
+  </div>
+</div>
+
+<hr class="page-break">
+
+<!-- 8-5 -->
+<div class="item">
+  <div class="item-header">
+    <div class="item-eyebrow">8-5 &nbsp;/&nbsp; 공모작 추가 강점</div>
+    <div class="item-title">신규 예산·법 개정 없이 기존 자원만으로 구현된다</div>
+  </div>
+
+  <div class="body-grid full" style="padding-top:16px">
+    <div class="callouts col2" style="margin-bottom:24px">
+      <div class="callout">
+        <div class="callout-kicker g">신규 예산·법 개정 불필요</div>
+        <div class="callout-num g" style="font-size:1.2rem;line-height:1.6">
+          신규 법률 0건<br>신규 인프라 0건<br>신규 보상 제도 0건
+        </div>
+        <div class="callout-body">분산에너지 활성화 특별법 2024.6 시행 완료. AMI 2,005만 호 보급 완료. 4개 보상 제도 이미 운영 중. NILMFormer 오픈소스 공개.</div>
+      </div>
+      <div class="callout">
+        <div class="callout-kicker g">정책 타이밍 완벽 일치</div>
+        <div class="callout-num g" style="font-size:1.2rem;line-height:1.6">
+          2024.6 특별법 시행<br>2026 동적 요금제 확대<br>11차 전수기본계획 수립
+        </div>
+        <div class="callout-body">한전 스마트그리드 확산사업(2026~2030) 시범 편입 가능. 동적 요금제 확대 정책의 시민 매개 도구로 정확히 부합.</div>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>해외 모델</th><th>규모</th><th>한국 적용 시 개선점</th></tr>
+      <tr><td><strong>Octopus Agile (영국)</strong></td><td>수십만 가구 운영 중</td><td>동적 요금 없이도 작동. 기존 캐시백·DR 제도 활용.</td></tr>
+      <tr><td><strong>OhmConnect (미국)</strong></td><td>200,000가구, 연 1GWh DR</td><td>민간 수익 모델 아닌 공익 공공 운영 모델.</td></tr>
+      <tr><td><strong>EDF/NILMFormer (프랑스)</strong></td><td>수백만 가구 상용화</td><td>15분 해상도 한계 명시, 단계적 고도화 로드맵.</td></tr>
+    </table>
+  </div>
+  <div class="insight">
+    <div class="insight-bar-g"></div>
+    <div class="insight-text">세 해외 모델 모두 한국에서 이미 검증된 방향이다. 청정 시간은 이를 한국 규제 환경(분산에너지법, AMI, 4개 제도)에 최적화해 <strong class="g">법 개정 없이 3~6개월 MVP를 출시</strong>할 수 있는 유일한 구조다.</div>
+  </div>
+</div>
+
+<div class="source" style="margin-top:48px">
+  <span>수치 출처 상세: 청정시간_심층조사.md / 기대효과 상세: 청정시간_실현가능성_기대효과.md</span>
+  <span>2026 기후부 AX 아이디어 경진대회 — 청정 시간 (Green Hour)</span>
+</div>
+
+
+<script>
+// 6-3 DR 참여 격차 차트
+const labelPlugin = {
+  id:'inlineLabels',
+  afterDatasetsDraw(chart){
+    const {ctx,data,scales:{x,y}}=chart;
+    ctx.save();
+    data.datasets[0].data.forEach((val,i)=>{
+      const bar=chart.getDatasetMeta(0).data[i];
+      const display=val>=1?val.toLocaleString()+'만 호':Math.round(val*10000).toLocaleString()+'호';
+      ctx.font='700 12px Batang, 바탕체, serif';
+      ctx.fillStyle='#0D0D0D';
+      ctx.textAlign='left';
+      ctx.textBaseline='middle';
+      ctx.fillText(display,bar.x+8,bar.y);
+    });
+    ctx.restore();
+  }
+};
+
+const ctx=document.getElementById('drChart').getContext('2d');
+new Chart(ctx,{
+  type:'bar',
+  plugins:[labelPlugin],
+  data:{
+    labels:['AMI 보급\n(잠재 DR 자원)','에너지캐시백\n(30~100원/kWh)','국민DR\n(1,300원/kWh)'],
+    datasets:[{
+      data:[2005,166,0.743],
+      backgroundColor:['#1B4332','#78350F','#B91C1C'],
+      borderWidth:0,
+      borderRadius:2,
+      barThickness:32,
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{display:false},
+      tooltip:{callbacks:{label:(c)=>c.raw>=1?` ${c.raw.toLocaleString()}만 호`:` ${Math.round(c.raw*10000).toLocaleString()}호`}}
+    },
+    scales:{
+      x:{grid:{color:'#E0DDD6'},border:{color:'#CCC'},ticks:{font:{size:11,family:'Batang, 바탕체, serif'},color:'#777',callback:(v)=>v===0?'0':v+'만'}},
+      y:{grid:{display:false},border:{color:'#0D0D0D',width:2},ticks:{font:{size:12,family:'Batang, 바탕체, serif'},color:'#0D0D0D',padding:8}}
+    },
+    animation:{duration:0}
+  }
+});
+</script>
+</body>
+</html>

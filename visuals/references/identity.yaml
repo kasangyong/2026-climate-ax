@@ -1,0 +1,30 @@
+project: 청정 시간 (Green Hour) — 2026 기후부 AX 기획서 시각 자료
+
+audience: 기후에너지환경부 공모전 심사위원. 공공정책·에너지 분야 전문가. 데이터에 익숙하며 과장된 표현에 냉소적.
+
+mood:
+  use:    [신뢰, 정확, 절제]
+  avoid:  [화려함, 캐주얼, 스타트업-느낌]
+
+color:
+  bg:        "#FAFAF9"
+  bg_muted:  "#F0EFE9"
+  line:      "#D6D3C8"
+  fg:        "#1A1A1A"
+  fg_muted:  "#5C5C57"
+  accent:    "#1B4332"   # deep forest green — single accent
+  accent2:   "#DC2626"   # danger/peak only (never decorative)
+  accent3:   "#92400E"   # warning (mid)
+
+type:
+  family:  "system-ui, -apple-system, 'Segoe UI', sans-serif"
+  mono:    "'Menlo', 'Consolas', monospace"
+  scale:   "Major Third 1.250"
+
+rules:
+  - 1px hairline borders only. No box-shadow.
+  - Numbers and data labels must be immediately readable (font-weight 700+).
+  - No gradients.
+  - No emoji in h1/h2/chart-title.
+  - At least one asymmetric layout element per chart.
+  - Spacing from 8pt scale only.

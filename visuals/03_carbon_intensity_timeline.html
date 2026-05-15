@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>24시간 탄소강도 타임라인</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  /* ── Information Is Beautiful / Awwwards Data Viz 스타일 ── */
+  :root {
+    --cream:  #F5F3EE;
+    --ink:    #0D0D0D;
+    --muted:  #666;
+    --rule:   #CCC;
+    --green:  #1B4332;
+    --red:    #B91C1C;
+    --dark-red:#7F1D1D;
+    --amber:  #78350F;
+    --orange: #9A3412;
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    padding: 56px 40px;
+    min-height: 100vh;
+  }
+  .wrap { width: 920px; }
+
+  .eyebrow {
+    font-family: system-ui, sans-serif;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .12em;
+    color: var(--green);
+    border-left: 3px solid var(--green);
+    padding-left: 10px;
+    margin-bottom: 20px;
+  }
+
+  /* 헤더 — VS 레이아웃 */
+  .header {
+    border-top: 2px solid var(--ink);
+    padding-top: 20px;
+    margin-bottom: 32px;
+  }
+  .header-top {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 0;
+    align-items: start;
+    margin-bottom: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .hl-title { font-size: 1.9rem; font-weight: 700; line-height: 1.25; letter-spacing: -.02em; margin-bottom: 10px; }
+  .hl-deck { font-family: system-ui, sans-serif; font-size: 13px; line-height: 1.7; color: var(--muted); max-width: 420px; }
+
+  /* VS 히어로 숫자 */
+  .vs-block {
+    display: flex;
+    align-items: stretch;
+    border-left: 1px solid var(--rule);
+    margin-left: 32px;
+  }
+  .vs-num-box { padding: 0 28px; text-align: center; }
+  .vs-label { font-family:system-ui,sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; margin-bottom:8px; }
+  .vs-label.red   { color: var(--red); }
+  .vs-label.green { color: var(--green); }
+  .vs-big {
+    font-family: system-ui, sans-serif;
+    font-size: 4rem; font-weight: 800; line-height: 1;
+    letter-spacing: -.04em; margin-bottom: 4px;
+  }
+  .vs-big.red   { color: var(--red); }
+  .vs-big.green { color: var(--green); }
+  .vs-unit { font-family:system-ui,sans-serif; font-size:11px; color:var(--muted); }
+  .vs-sep {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 12px;
+    font-family: system-ui, sans-serif;
+    font-size: 1rem; font-weight: 800;
+    color: var(--ink);
+    border-left: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+  }
+  .ratio-callout {
+    font-family: system-ui, sans-serif;
+    font-size: 13px; line-height: 1.6; color: var(--muted);
+    padding: 0 0 0 28px; display: flex; align-items: center;
+  }
+  .ratio-callout strong { color: var(--red); font-size: 1.2rem; }
+
+  /* 차트 */
+  .chart-wrap { height: 280px; position: relative; margin-bottom: 8px; }
+
+  /* 범례 */
+  .legend-row {
+    display: flex; gap: 20px; align-items: center;
+    padding: 10px 0 16px;
+    border-bottom: 1px solid var(--rule);
+    font-family: system-ui, sans-serif; font-size: 12px; color: var(--muted);
+  }
+  .legend-lbl { font-weight: 700; color: var(--ink); margin-right: 4px; }
+  .leg-sw { width: 12px; height: 12px; border-radius: 2px; display: inline-block; vertical-align: middle; margin-right: 4px; }
+
+  /* 가전 비교 — 3단 */
+  .appliance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    border-top: 2px solid var(--ink);
+    margin-top: 8px;
+  }
+  .appl-col {
+    padding: 20px 20px 20px 0;
+    border-right: 1px solid var(--rule);
+  }
+  .appl-col:last-child { border-right: none; }
+  .appl-name {
+    font-family: system-ui, sans-serif;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--muted);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .appl-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .appl-time { font-family: system-ui, sans-serif; font-size: 12px; color: var(--muted); }
+  .appl-val {
+    font-family: 'Menlo', 'Consolas', monospace;
+    font-size: 1.2rem; font-weight: 700;
+  }
+  .appl-val.red   { color: var(--red); }
+  .appl-val.green { color: var(--green); }
+  .appl-delta {
+    font-family: system-ui, sans-serif;
+    font-size: 12px; font-weight: 700;
+    color: var(--green);
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--rule);
+  }
+
+  .source-line {
+    font-family: system-ui, sans-serif; font-size: 11px; color: var(--muted);
+    border-top: 1px solid var(--rule);
+    padding-top: 12px; margin-top: 24px;
+    display: flex; justify-content: space-between;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .wrap { animation: fadein 400ms cubic-bezier(.2,0,0,1); }
+    @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">독창성 — 한국 최초 가정 탄소강도 실시간 공개 &nbsp;/&nbsp; 사회문제 해결 1-6</div>
+
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="hl-title">같은 1kWh라도<br>시간대에 따라 탄소가 2.7배 다르다</div>
+        <div class="hl-deck">
+          한국은 시간대별 탄소강도를 시민에게 공개하지 않는다.
+          연간 평균값(0.4434 tCO₂/MWh)만 존재할 뿐 지금 이 순간이 얼마인지 알 수 없다.
+          청정 시간은 EPSIS 발전 믹스 × 발전원별 배출계수 실시간 연산으로
+          한국 최초로 가정에 탄소강도를 공개한다.
+        </div>
+      </div>
+      <div class="vs-block">
+        <div class="vs-num-box">
+          <div class="vs-label red">저녁 피크 (오후 7~9시)</div>
+          <div class="vs-big red">540</div>
+          <div class="vs-unit">gCO₂/kWh</div>
+        </div>
+        <div class="vs-sep">vs</div>
+        <div class="vs-num-box">
+          <div class="vs-label green">청정 시간 (오전 11시~오후 1시)</div>
+          <div class="vs-big green">200</div>
+          <div class="vs-unit">gCO₂/kWh</div>
+        </div>
+        <div class="ratio-callout"><strong>2.7×</strong><br>차이</div>
+      </div>
+    </div>
+
+    <div class="legend-row">
+      <span class="legend-lbl">탄소강도 구간 :</span>
+      <span><span class="leg-sw" style="background:#1B4332"></span>청정 &lt;250 gCO₂/kWh</span>
+      <span><span class="leg-sw" style="background:#78350F"></span>보통 250~400</span>
+      <span><span class="leg-sw" style="background:#9A3412"></span>높음 400~500</span>
+      <span><span class="leg-sw" style="background:#7F1D1D"></span>피크 500+</span>
+      <span style="margin-left:auto;font-size:11px;">※ 연간 평균 440 gCO₂/kWh 기준선 표시</span>
+    </div>
+  </div>
+
+  <div class="chart-wrap"><canvas id="chart"></canvas></div>
+
+  <div class="appliance-grid">
+    <div class="appl-col">
+      <div class="appl-name">세탁기 1회 (0.85 kWh 기준)</div>
+      <div class="appl-row"><span class="appl-time">저녁 7시라면</span><span class="appl-val red">459 g CO₂</span></div>
+      <div class="appl-row"><span class="appl-time">청정 시간 (지금)</span><span class="appl-val green">170 g CO₂</span></div>
+      <div class="appl-delta">시간 이동 시 −289g, −63% 절감</div>
+    </div>
+    <div class="appl-col">
+      <div class="appl-name">식기세척기 1회 (0.9 kWh 기준)</div>
+      <div class="appl-row"><span class="appl-time">저녁 7시라면</span><span class="appl-val red">486 g CO₂</span></div>
+      <div class="appl-row"><span class="appl-time">청정 시간 (지금)</span><span class="appl-val green">180 g CO₂</span></div>
+      <div class="appl-delta">시간 이동 시 −306g, −63% 절감</div>
+    </div>
+    <div class="appl-col">
+      <div class="appl-name">EV 완충 1회 (75 kWh 기준)</div>
+      <div class="appl-row"><span class="appl-time">저녁 7시라면</span><span class="appl-val red">40.5 kg CO₂</span></div>
+      <div class="appl-row"><span class="appl-time">청정 시간 (지금)</span><span class="appl-val green">15.0 kg CO₂</span></div>
+      <div class="appl-delta">충전 시각 이동 시 −25.5 kg, −63% 절감</div>
+    </div>
+  </div>
+
+  <div class="source-line">
+    <span>출처: 온실가스종합정보센터 발전원별 배출계수 × 전력거래소 EPSIS 시간대별 발전 믹스 / 2025년 기준 추산값</span>
+    <span>2026 기후부 AX 아이디어 경진대회 — 청정 시간</span>
+  </div>
+</div>
+
+<script>
+const hours = Array.from({length:24},(_,i)=>i+'시');
+const ci = [430,440,445,450,448,440,430,410,380,340,280,230,200,205,210,260,320,400,480,540,545,520,480,450];
+const AVG = 440;
+
+function barColor(v){
+  if(v<250) return '#1B4332';
+  if(v<400) return '#78350F';
+  if(v<500) return '#9A3412';
+  return '#7F1D1D';
+}
+
+// 평균선 + 주석 + 2.7× 브라켓 플러그인
+const annotPlugin = {
+  id:'annot',
+  afterDatasetsDraw(chart){
+    const {ctx,chartArea:{left,right,top,bottom},scales:{x,y}}=chart;
+    ctx.save();
+
+    // 평균선
+    const avgY = y.getPixelForValue(AVG);
+    ctx.strokeStyle='#999'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(left,avgY); ctx.lineTo(right,avgY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font='11px system-ui,sans-serif'; ctx.fillStyle='#999';
+    ctx.textAlign='left'; ctx.fillText('연평균 440',left+4,avgY-5);
+
+    // 수치 레이블 — 최솟값(200, index 12), 최댓값(545, index 20)
+    const b12=chart.getDatasetMeta(0).data[12];
+    ctx.font='700 12px Menlo,Consolas,monospace';
+    ctx.fillStyle='#1B4332'; ctx.textAlign='center';
+    ctx.fillText('200',b12.x,b12.y-8);
+
+    const b20=chart.getDatasetMeta(0).data[20];
+    ctx.fillStyle='#7F1D1D';
+    ctx.fillText('545',b20.x,b20.y-8);
+
+    // 청정 구간 점선
+    const cx0=x.getPixelForValue(9.5),cx1=x.getPixelForValue(14.5);
+    ctx.strokeStyle='#1B4332'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(cx0,top); ctx.lineTo(cx0,bottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx1,top); ctx.lineTo(cx1,bottom); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#1B4332'; ctx.font='600 10px system-ui,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('청정 시간',(cx0+cx1)/2,top+11);
+
+    // 피크 구간 점선
+    const px0=x.getPixelForValue(18),px1=x.getPixelForValue(21.5);
+    ctx.strokeStyle='#B91C1C'; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(px0,top); ctx.lineTo(px0,bottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px1,top); ctx.lineTo(px1,bottom); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#B91C1C'; ctx.textAlign='center';
+    ctx.fillText('저녁 피크',(px0+px1)/2,top+11);
+
+    // 2.7× 브라켓
+    const yLow=y.getPixelForValue(200), yHigh=y.getPixelForValue(540);
+    const xr=right+16;
+    ctx.strokeStyle='#555'; ctx.lineWidth=1; ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(xr,yLow); ctx.lineTo(xr+8,yLow);
+    ctx.lineTo(xr+8,yHigh);
+    ctx.lineTo(xr,yHigh);
+    ctx.stroke();
+    ctx.fillStyle='#0D0D0D'; ctx.font='700 12px Menlo,Consolas,monospace'; ctx.textAlign='left';
+    ctx.fillText('2.7×',xr+12,(yLow+yHigh)/2+4);
+
+    ctx.restore();
+  }
+};
+
+const ctx=document.getElementById('chart').getContext('2d');
+new Chart(ctx,{
+  type:'bar',
+  plugins:[annotPlugin],
+  data:{
+    labels:hours,
+    datasets:[{ data:ci, backgroundColor:ci.map(barColor), borderWidth:0, borderRadius:2 }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    layout:{ padding:{ right:56 } },
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>` ${c.raw} gCO₂/kWh` } } },
+    scales:{
+      x:{ grid:{display:false}, border:{color:'#0D0D0D',width:2}, ticks:{ font:{size:11,family:'Menlo,Consolas,monospace'}, color:'#777', maxTicksLimit:12 } },
+      y:{ grid:{color:'#E0DDD6'}, border:{color:'#CCC'}, ticks:{ callback:(v)=>v+' g', font:{size:11,family:'Menlo,Consolas,monospace'}, color:'#777' }, min:0, max:600,
+          title:{ display:true, text:'gCO₂/kWh', color:'#999', font:{size:11,family:'system-ui,sans-serif'} } }
+    },
+    animation:{duration:0}
+  }
+});
+</script>
+</body>
+</html>
